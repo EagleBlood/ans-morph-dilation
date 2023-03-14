@@ -2,15 +2,11 @@ import cv2
 import numpy as np
 
 # wczytanie obrazu
-<<<<<<< HEAD
 img = cv2.imread('D:\Programowanie\Python\image.png', 0)
 img = cv2.resize(img, (400, 400))
 
 # konwersja trybu kolorów na 3 kanały
 img = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
-=======
-img = cv2.imread(r'test.png', 0)
->>>>>>> 520b085eb8c602a23d6f74c6352cd20023eb92f0
 
 # określenie kernela
 kernel = np.ones((5, 5), np.uint8)
