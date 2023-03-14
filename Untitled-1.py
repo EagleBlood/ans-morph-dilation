@@ -1,6 +1,12 @@
 import cv2
 import numpy as np
 
+
+
+
+
+
+
 # wczytanie obrazu
 img = cv2.imread(r'test.png', 0)
 img = cv2.resize(img, (400, 400))
@@ -9,10 +15,10 @@ img = cv2.resize(img, (400, 400))
 img = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
 
 # określenie kernela
-kernel = np.ones((5, 5), np.uint8)
+kernel = cv2.getStructuringElement(cv2.MORPH_CROSS, (3, 3))
 
 # zastosowanie dylatacji z wykorzystaniem kernela
-dilation = cv2.dilate(img, kernel, iterations=8)
+dilation = cv2.dilate(img, kernel, iterations=1)
 
 # dodanie marginesów między obrazami
 img = cv2.copyMakeBorder(img, 0, 0, 0, 0, cv2.BORDER_CONSTANT, value=(0, 0, 0))
