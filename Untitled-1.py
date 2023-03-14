@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 
 # wczytanie obrazu
-img = cv2.imread('D:\Programowanie\Python\image.png', 0)
+img = cv2.imread(r'test.png', 0)
 img = cv2.resize(img, (400, 400))
 
 # konwersja trybu kolorów na 3 kanały
