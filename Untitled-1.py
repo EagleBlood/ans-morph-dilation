@@ -19,7 +19,7 @@ img = cv2.copyMakeBorder(img, 0, 0, 0, 0, cv2.BORDER_CONSTANT, value=(0, 0, 0))
 dilation = cv2.copyMakeBorder(dilation, 0, 0, 0, 0, cv2.BORDER_CONSTANT, value=(0, 0, 0))
 
 # utworzenie obrazu szarego jako tła okna
-background = np.zeros((500, 880, 3), dtype=np.uint8)
+background = np.zeros((500, 880, 3), dtype=np.uint8)  #trzeba zmieniać 880 żeby dostosować tablice, czemu nie wiem ale nie ma wyjścia xd
 background[:] = (128, 128, 128)
 
 # dodanie opisu na górze obrazów
