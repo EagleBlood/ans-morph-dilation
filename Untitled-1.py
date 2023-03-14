@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 
 # wczytanie obrazu
-img = cv2.imread('D:\Programowanie\Python\image.png', 0)
+img = cv2.imread(r'test.png', 0)
 
 # określenie kernela
 kernel = np.ones((5, 5), np.uint8)
