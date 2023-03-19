@@ -1,25 +1,19 @@
 import cv2
 import numpy as np
 
-
-
-
-
-
-
 # wczytanie obrazu
 img = cv2.imread(r'ertka.bmp', 0)
-#img = cv2.resize(img, (200, 200))
+
 dimensions = img.shape
-height = img.shape[0]
-width = img.shape[1]
+height, width = img.shape[:2]
+
 # konwersja trybu kolorów na 3 kanały
 img = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
 
 # określenie kernela
-kernel = cv2.getStructuringElement(cv2.MORPH_CROSS, (3, 3))
+kernel = np.ones((3, 3), np.uint8)
 
-# zastosowanie dylatacji z wykorzystaniem kernela
+# zastosowanie filtru maksymalnego z wykorzystaniem kernela
 dilation = cv2.dilate(img, kernel, iterations=1)
 
 # dodanie marginesów między obrazami
@@ -27,7 +21,7 @@ img = cv2.copyMakeBorder(img, 0, 0, 0, 0, cv2.BORDER_CONSTANT, value=(0, 0, 0))
 dilation = cv2.copyMakeBorder(dilation, 0, 0, 0, 0, cv2.BORDER_CONSTANT, value=(0, 0, 0))
 
 # utworzenie obrazu szarego jako tła okna
-background = np.zeros((height*2, width*3, 3), dtype=np.uint8)  #trzeba zmieniać 880 żeby dostosować tablice, czemu nie wiem ale nie ma wyjścia xd
+background = np.zeros((height*2, width*3, 3), dtype=np.uint8)
 background[:] = (128, 128, 128)
 
 # dodanie opisu na górze obrazów
@@ -42,5 +36,3 @@ background[50:height+50, 150+width:150+(2*width)] = dilation
 cv2.imshow('Result', background)
 cv2.waitKey(0)
 cv2.destroyAllWindows()
-
-
