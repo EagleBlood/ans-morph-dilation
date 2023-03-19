@@ -1,6 +1,14 @@
 import cv2
 import numpy as np
 
+def alg(img,tab):
+    tmpImg = np.squeeze(np.array(img))
+    
+
+         
+    
+    #return tmpImg                                         
+
 # wczytanie obrazu
 img = cv2.imread(r'ertka.bmp', 0)
 
@@ -13,9 +21,25 @@ img = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
 # określenie kernela
 kernel = np.ones((3, 3), np.uint8)
 
+tab = np.zeros((3,3),np.uint8)
+tab[0][0] = 1;
+tab[0][1] = 1;
+tab[0][2] = 1;
+
+#tab = np.rot90(tab)
 # zastosowanie filtru maksymalnego z wykorzystaniem kernela
 dilation = cv2.dilate(img, kernel, iterations=1)
+#dilation = 
+alg(img,tab)
 
+
+masked = np.ones((3, 3), np.uint8)
+   
+for y in range(0,3):
+    for x in range(0,3):
+        masked[y][x] = img[y][x]
+masked *= tab
+print(masked)
 # dodanie marginesów między obrazami
 img = cv2.copyMakeBorder(img, 0, 0, 0, 0, cv2.BORDER_CONSTANT, value=(0, 0, 0))
 dilation = cv2.copyMakeBorder(dilation, 0, 0, 0, 0, cv2.BORDER_CONSTANT, value=(0, 0, 0))
@@ -32,7 +56,9 @@ cv2.putText(background, "Image 2", (500, 40), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,
 background[50:height+50, 50:width+50] = img
 background[50:height+50, 150+width:150+(2*width)] = dilation
 
-# wyświetlenie obrazów przed i po dylatacji
+
+
+#wyświetlenie obrazów przed i po dylatacji
 cv2.imshow('Result', background)
 cv2.waitKey(0)
 cv2.destroyAllWindows()
