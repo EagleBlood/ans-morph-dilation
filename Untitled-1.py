@@ -90,7 +90,7 @@ dilation, step1, step2, step3, step4 = thick(img)
 
 # create a 2x3 table for displaying the images with margins and a gray background
 margin_size = 70
-white_color = (123, 123, 127)
+white_color = (255, 255, 255)
 table = np.ones((2*img.shape[0] + 3*margin_size, 3*img.shape[1] + 4*margin_size), dtype=np.uint8) * white_color[0]
 table[margin_size:-margin_size, margin_size:-margin_size] = white_color[0]
 
