@@ -89,23 +89,33 @@ img = cv2.imread(r'ertka.bmp', 0)
 dilation, step1, step2, step3, step4 = thick(img)
 
 # create a 2x3 table for displaying the images with margins and a gray background
-margin_size = 20
-# gray_color = (128, 128, 128)
-white_color = (255, 255, 255)
+margin_size = 70
+white_color = (123, 123, 127)
 table = np.ones((2*img.shape[0] + 3*margin_size, 3*img.shape[1] + 4*margin_size), dtype=np.uint8) * white_color[0]
 table[margin_size:-margin_size, margin_size:-margin_size] = white_color[0]
 
-# set the first image to be the input image with margins
+# set the first image to be the input image with margins and a label
+font = cv2.FONT_HERSHEY_SIMPLEX
+cv2.putText(table, 'Input Image', (margin_size+10, margin_size-10), font, 1, (0, 0, 0), 2)
 table[margin_size:img.shape[0]+margin_size, margin_size:img.shape[1]+margin_size] = img
 
-# set the intermediate images in the remaining cells of the first row with margins
+# set the intermediate images in the remaining cells of the first row with margins and labels
+cv2.putText(table, 'Step 1', (img.shape[1]+2*margin_size+10, margin_size-10), font, 1, (0, 0, 0), 2)
 table[margin_size:img.shape[0]+margin_size, img.shape[1]+2*margin_size:2*img.shape[1]+2*margin_size] = step1
+
+cv2.putText(table, 'Step 2', (2*img.shape[1]+3*margin_size+10, margin_size-10), font, 1, (0, 0, 0), 2)
 table[margin_size:img.shape[0]+margin_size, 2*img.shape[1]+3*margin_size:3*img.shape[1]+3*margin_size] = step2
 
-# set the intermediate images in the remaining cells of the second row with margins
+# set the intermediate images in the remaining cells of the second row with margins and labels
+cv2.putText(table, 'Step 3', (margin_size+10, img.shape[0]+2*margin_size-10), font, 1, (0, 0, 0), 2)
 table[img.shape[0]+2*margin_size:2*img.shape[0]+2*margin_size, margin_size:img.shape[1]+margin_size] = step3
+
+cv2.putText(table, 'Step 4', (img.shape[1]+2*margin_size+10, img.shape[0]+2*margin_size-10), font, 1, (0, 0, 0), 2)
 table[img.shape[0]+2*margin_size:2*img.shape[0]+2*margin_size, img.shape[1]+2*margin_size:2*img.shape[1]+2*margin_size] = step4
+
+cv2.putText(table, 'Result', (2*img.shape[1]+3*margin_size+10, img.shape[0]+2*margin_size-10), font, 1, (0, 0, 0), 2)
 table[img.shape[0]+2*margin_size:2*img.shape[0]+2*margin_size, 2*img.shape[1]+3*margin_size:3*img.shape[1]+3*margin_size] = dilation
+
 
 # display the table of images
 cv2.imshow('Morphological Dilation Steps', table)
