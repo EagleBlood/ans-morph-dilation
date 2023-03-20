@@ -76,46 +76,37 @@ def thick(img):
 
     imgA += img1 + img2 + img3 + img4
 
-    return imgA
+    return imgA, img1, img2, img3, img4
 
    
 
 
 
-
-
-# wczytanie obrazu
+# load the input image
 img = cv2.imread(r'ertka.bmp', 0)
 
-dimensions = img.shape
-height, width = img.shape[:2]
+# apply the morphological dilation
+dilation, step1, step2, step3, step4 = thick(img)
 
-# konwersja trybu kolorów na 3 kanały
+# create a 2x3 table for displaying the images with margins and a gray background
+margin_size = 20
+gray_color = (128, 128, 128)
+table = np.ones((2*img.shape[0] + 3*margin_size, 3*img.shape[1] + 4*margin_size), dtype=np.uint8) * gray_color[0]
+table[margin_size:-margin_size, margin_size:-margin_size] = gray_color[0]
 
+# set the first image to be the input image with margins
+table[margin_size:img.shape[0]+margin_size, margin_size:img.shape[1]+margin_size] = img
 
-# określenie kernela
-kernel = np.ones((3, 3), np.uint8)
+# set the intermediate images in the remaining cells of the first row with margins
+table[margin_size:img.shape[0]+margin_size, img.shape[1]+2*margin_size:2*img.shape[1]+2*margin_size] = step1
+table[margin_size:img.shape[0]+margin_size, 2*img.shape[1]+3*margin_size:3*img.shape[1]+3*margin_size] = step2
 
-# zastosowanie filtru maksymalnego z wykorzystaniem kernela
-#dilation = cv2.dilate(img, kernel, iterations=1)
-dilation = thick(img)
-# dodanie marginesów między obrazami
-img = cv2.copyMakeBorder(img, 0, 0, 0, 0, cv2.BORDER_CONSTANT, value=0)
+# set the intermediate images in the remaining cells of the second row with margins
+table[img.shape[0]+2*margin_size:2*img.shape[0]+2*margin_size, margin_size:img.shape[1]+margin_size] = step3
+table[img.shape[0]+2*margin_size:2*img.shape[0]+2*margin_size, img.shape[1]+2*margin_size:2*img.shape[1]+2*margin_size] = step4
+table[img.shape[0]+2*margin_size:2*img.shape[0]+2*margin_size, 2*img.shape[1]+3*margin_size:3*img.shape[1]+3*margin_size] = dilation
 
-
-# utworzenie obrazu szarego jako tła okna
-background = np.zeros((height*2, width*3), dtype=np.uint8)
-background[:] = (128)
-
-# dodanie opisu na górze obrazów
-cv2.putText(background, "Image 1", (80, 40), cv2.FONT_HERSHEY_SIMPLEX, 1, 255, 2, cv2.LINE_AA)
-cv2.putText(background, "Image 2", (500, 40), cv2.FONT_HERSHEY_SIMPLEX, 1, 255, 2, cv2.LINE_AA)
-
-# umieszczenie obrazów na tle
-background[50:height+50, 50:width+50] = img
-background[50:height+50, 150+width:150+(2*width)] = dilation
-
-# wyświetlenie obrazów przed i po dylatacji
-cv2.imshow('Result', background)
+# display the table of images
+cv2.imshow('Morphological Dilation Steps', table)
 cv2.waitKey(0)
 cv2.destroyAllWindows()
