@@ -88,6 +88,7 @@ def setPhotoOnCanvas(canvas, img, x, y, photo_list):
     photo_list.append(img_tk)
     canvas.create_image(x, y, image=photo_list[-1], anchor='nw')
 
+
 #global variables
 margin_size = 70
 white_color = (255, 255, 255)
@@ -111,6 +112,23 @@ canvas.pack()
 canvas.create_text(margin_size+img.shape[1]/2, margin_size-40, text='Input Image', font=font)
 setPhotoOnCanvas(canvas, img, margin_size, margin_size-20, photo_list)
 
+#Buttons
+update_button = Button(root, text='Update Images')
+load_button = Button(root, text='Load Image')
+mask_list = Listbox(root, selectmode=SINGLE, height=3)
+mask_list.insert(1, 'Mask 1')
+mask_list.insert(2, 'Mask 2')
+mask_list.insert(3, 'Mask 3')
+mask_list.insert(4, 'Mask 4')
+save_button = Button(root, text='Save Image')
+
+
+# Place the buttons to the right of the input image
+update_button.place(x=margin_size+img.shape[1]+20, y=margin_size)
+load_button.place(x=margin_size+img.shape[1]+20, y=margin_size+40)
+mask_list.place(x=margin_size+img.shape[1]+20, y=margin_size+80)
+
+
 # create a table to display the morphological dilation steps
 table_size = (img.shape[1]//1.3, img.shape[0]//1.3)
 table_margin_size = 20
@@ -125,20 +143,11 @@ for i in range(4):
     canvas.create_text(table_x + table_size[0]/2, table_y-10, text=f'Step {i+1}', font=font)
     setPhotoOnCanvas(canvas, cv2.resize(step_img, (int(table_size[0]), int(table_size[1]))), table_x, table_y, photo_list)
 
-# button
-# update_button = Button(root, text='Update Images')
-# load_button = Button(root, text='Load Image')
-# save_button = Button(root, text='Save Image')
+# add result image next to the table
+canvas.create_text(margin_size*2 + table_size[0]*2 + margin_size//2, margin_size*2+img.shape[0]-10, text='Result', font=font)
+setPhotoOnCanvas(canvas, dilation, margin_size*2 + table_size[0]*2, margin_size*2+img.shape[0], photo_list)
 
-# mask_list = Listbox(root, selectmode=SINGLE, height=3)
-# mask_list.insert(1, 'Mask 1')
-# mask_list.insert(2, 'Mask 2')
-# mask_list.insert(3, 'Mask 3')
-# mask_list.insert(4, 'Mask 4')
+save_button.place(x=margin_size*2 + table_size[0]*2, y=margin_size*2+img.shape[0]+table_margin_size+table_size[1]+30)
 
-# update_button.pack()
-# load_button.pack()
-# mask_list.pack()
-# save_button.pack()
 
 root.mainloop()
