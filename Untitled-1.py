@@ -1,8 +1,25 @@
 from PIL import Image, ImageTk
 import numpy as np
 import cv2
-from tkinter import SINGLE, Button, Listbox, Tk, Canvas
+from tkinter import SINGLE, Button, Listbox, OptionMenu, Radiobutton, StringVar, Tk, Canvas
+import os
 
+#Global variables
+program_dir = os.path.dirname(os.path.abspath(__file__))
+
+margin_size = 70
+background_color = (255, 255, 255)
+font = cv2.FONT_HERSHEY_SIMPLEX
+photo_list = []
+mask_filenames = {
+    "Golay Mask C ": "mask/maskC.png",
+    "Golay Mask D": "mask/maskD.png",
+    "Golay Mask E": "mask/maskE.png",
+}
+mask_names = list(mask_filenames.keys())
+
+
+#Mask functions
 def thick(img):
     imgA = np.array(img)
     
@@ -88,48 +105,54 @@ def setPhotoOnCanvas(canvas, img, x, y, photo_list):
     photo_list.append(img_tk)
     canvas.create_image(x, y, image=photo_list[-1], anchor='nw')
 
-
-#global variables
-margin_size = 70
-white_color = (255, 255, 255)
-font = cv2.FONT_HERSHEY_SIMPLEX
-photo_list = []
+def update_mask_image(*args):
+    mask_name = selected_mask_var.get()
+    mask_img = loadImg(os.path.join(program_dir, mask_filenames[mask_name]))
+    setPhotoOnCanvas(canvas, mask_img, margin_size*4 + img.shape[0] + 50, margin_size-20, photo_list)
 
 
-# load the input image
+
+# Load the input image
 img = cv2.imread(r'ertka.bmp', 0)
+mask_grid_img = np.zeros_like(img)
 
-# apply the morphological dilation
+# Apply the morphological dilation
 dilation, step1, step2, step3, step4 = thick(img)
 
-# create a window and canvas to display the images
+
+# Create a window and canvas to display the images
 root = Tk()
 root.title('Morphological Dilation Steps')
 canvas = Canvas(root, width=3*img.shape[1] + 4*margin_size, height=2*img.shape[0] + 3*margin_size)
 canvas.pack()
 
-# set the images and labels
+
+# Set the images and labels
 canvas.create_text(margin_size+img.shape[1]/2, margin_size-40, text='Input Image', font=font)
 setPhotoOnCanvas(canvas, img, margin_size, margin_size-20, photo_list)
+
 
 #Buttons
 update_button = Button(root, text='Update Images')
 load_button = Button(root, text='Load Image')
-mask_list = Listbox(root, selectmode=SINGLE, height=3)
-mask_list.insert(1, 'Mask 1')
-mask_list.insert(2, 'Mask 2')
-mask_list.insert(3, 'Mask 3')
-mask_list.insert(4, 'Mask 4')
+
+selected_mask_var = StringVar()
+selected_mask_var.set(mask_names[0])  # set the default mask to the first in the list
+mask_dropdown = OptionMenu(root, selected_mask_var, *mask_names)
+
+selected_mask_var.trace("w", update_mask_image)
+
 save_button = Button(root, text='Save Image')
+change_lang_radio = Radiobutton(root, text='Change language', variable=1, value=1)
 
 
 # Place the buttons to the right of the input image
-update_button.place(x=margin_size+img.shape[1]+20, y=margin_size)
-load_button.place(x=margin_size+img.shape[1]+20, y=margin_size+40)
-mask_list.place(x=margin_size+img.shape[1]+20, y=margin_size+80)
+update_button_window = canvas.create_window(margin_size*2 + img.shape[1] + 25, margin_size, window=update_button)
+load_button_window = canvas.create_window(margin_size*2 + img.shape[1] + 25, margin_size+40, window=load_button)
+mask_dropdown_window = canvas.create_window(margin_size*2 + img.shape[1] + 25, margin_size+80, window=mask_dropdown)
 
 
-# create a table to display the morphological dilation steps
+# Create a table to display the morphological dilation steps
 table_size = (img.shape[1]//1.3, img.shape[0]//1.3)
 table_margin_size = 20
 table_start_x = margin_size
@@ -143,11 +166,18 @@ for i in range(4):
     canvas.create_text(table_x + table_size[0]/2, table_y-10, text=f'Step {i+1}', font=font)
     setPhotoOnCanvas(canvas, cv2.resize(step_img, (int(table_size[0]), int(table_size[1]))), table_x, table_y, photo_list)
 
-# add result image next to the table
-canvas.create_text(margin_size*2 + table_size[0]*2 + margin_size//2, margin_size*2+img.shape[0]-10, text='Result', font=font)
+
+# Add result image next to the table
+canvas.create_text(margin_size*2 + table_size[0]*2 +  dilation.shape[1]/2, margin_size*2+img.shape[0]-10, text='Result', font=font)
 setPhotoOnCanvas(canvas, dilation, margin_size*2 + table_size[0]*2, margin_size*2+img.shape[0], photo_list)
 
-save_button.place(x=margin_size*2 + table_size[0]*2, y=margin_size*2+img.shape[0]+table_margin_size+table_size[1]+30)
+
+# Add save button
+save_button_window = canvas.create_window(margin_size*2 + table_size[0]*2 +  dilation.shape[1]/2, margin_size*2+img.shape[0]+table_margin_size+table_size[1]+50, window=save_button)
+
+
+# Display default mask image
+update_mask_image()
 
 
 root.mainloop()
