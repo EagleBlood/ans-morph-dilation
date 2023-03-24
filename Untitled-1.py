@@ -1,6 +1,7 @@
-import cv2
+from PIL import Image, ImageTk
 import numpy as np
-
+import cv2
+from tkinter import SINGLE, Button, Listbox, Tk, Canvas
 
 def thick(img):
     imgA = np.array(img)
@@ -77,48 +78,67 @@ def thick(img):
 
     return imgA, img1, img2, img3, img4
 
-   
+def loadImg(path):
+    img = cv2.imread(path, 0)
+    return img
+
+def setPhotoOnCanvas(canvas, img, x, y, photo_list):
+    img_pil = Image.fromarray(img)
+    img_tk = ImageTk.PhotoImage(img_pil)
+    photo_list.append(img_tk)
+    canvas.create_image(x, y, image=photo_list[-1], anchor='nw')
 
 #global variables
 margin_size = 70
 white_color = (255, 255, 255)
 font = cv2.FONT_HERSHEY_SIMPLEX
+photo_list = []
 
 
 # load the input image
 img = cv2.imread(r'ertka.bmp', 0)
 
-
 # apply the morphological dilation
 dilation, step1, step2, step3, step4 = thick(img)
 
-
-# create a 2x3 table for displaying the images with margins and a background
-table = np.ones((2*img.shape[0] + 3*margin_size, 3*img.shape[1] + 4*margin_size), dtype=np.uint8) * white_color[0]
-table[margin_size:-margin_size, margin_size:-margin_size] = white_color[0]
-
+# create a window and canvas to display the images
+root = Tk()
+root.title('Morphological Dilation Steps')
+canvas = Canvas(root, width=3*img.shape[1] + 4*margin_size, height=2*img.shape[0] + 3*margin_size)
+canvas.pack()
 
 # set the images and labels
-cv2.putText(table, 'Input Image', (margin_size+10, margin_size-10), font, 1, (0, 0, 0), 2)
-table[margin_size:img.shape[0]+margin_size, margin_size:img.shape[1]+margin_size] = img
+canvas.create_text(margin_size+img.shape[1]/2, margin_size-40, text='Input Image', font=font)
+setPhotoOnCanvas(canvas, img, margin_size, margin_size-20, photo_list)
 
-cv2.putText(table, 'Step 1', (img.shape[1]+2*margin_size+10, margin_size-10), font, 1, (0, 0, 0), 2)
-table[margin_size:img.shape[0]+margin_size, img.shape[1]+2*margin_size:2*img.shape[1]+2*margin_size] = step1
+# create a table to display the morphological dilation steps
+table_size = (img.shape[1]//1.3, img.shape[0]//1.3)
+table_margin_size = 20
+table_start_x = margin_size
+table_start_y = margin_size*3+40
+for i in range(4):
+    row = i // 2
+    col = i % 2
+    step_img = [step1, step2, step3, step4][i]
+    table_x = table_start_x + col * (table_size[0] + table_margin_size) 
+    table_y = table_start_y + row * (table_size[1] + table_margin_size)
+    canvas.create_text(table_x + table_size[0]/2, table_y-10, text=f'Step {i+1}', font=font)
+    setPhotoOnCanvas(canvas, cv2.resize(step_img, (int(table_size[0]), int(table_size[1]))), table_x, table_y, photo_list)
 
-cv2.putText(table, 'Step 2', (2*img.shape[1]+3*margin_size+10, margin_size-10), font, 1, (0, 0, 0), 2)
-table[margin_size:img.shape[0]+margin_size, 2*img.shape[1]+3*margin_size:3*img.shape[1]+3*margin_size] = step2
+# button
+# update_button = Button(root, text='Update Images')
+# load_button = Button(root, text='Load Image')
+# save_button = Button(root, text='Save Image')
 
-cv2.putText(table, 'Step 3', (margin_size+10, img.shape[0]+2*margin_size-10), font, 1, (0, 0, 0), 2)
-table[img.shape[0]+2*margin_size:2*img.shape[0]+2*margin_size, margin_size:img.shape[1]+margin_size] = step3
+# mask_list = Listbox(root, selectmode=SINGLE, height=3)
+# mask_list.insert(1, 'Mask 1')
+# mask_list.insert(2, 'Mask 2')
+# mask_list.insert(3, 'Mask 3')
+# mask_list.insert(4, 'Mask 4')
 
-cv2.putText(table, 'Step 4', (img.shape[1]+2*margin_size+10, img.shape[0]+2*margin_size-10), font, 1, (0, 0, 0), 2)
-table[img.shape[0]+2*margin_size:2*img.shape[0]+2*margin_size, img.shape[1]+2*margin_size:2*img.shape[1]+2*margin_size] = step4
+# update_button.pack()
+# load_button.pack()
+# mask_list.pack()
+# save_button.pack()
 
-cv2.putText(table, 'Result', (2*img.shape[1]+3*margin_size+10, img.shape[0]+2*margin_size-10), font, 1, (0, 0, 0), 2)
-table[img.shape[0]+2*margin_size:2*img.shape[0]+2*margin_size, 2*img.shape[1]+3*margin_size:3*img.shape[1]+3*margin_size] = dilation
-
-
-# display the table of images
-cv2.imshow('Morphological Dilation Steps', table)
-cv2.waitKey(0)
-cv2.destroyAllWindows()
+root.mainloop()
