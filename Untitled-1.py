@@ -113,8 +113,10 @@ def update_mask_image(*args):
 
 
 # Load the input image
-img = cv2.imread(r'ertka.bmp', 0)
-mask_grid_img = np.zeros_like(img)
+img = cv2.imread(r'test.png', 0)
+img = cv2.resize(img, (228, 164))
+
+
 
 # Apply the morphological dilation
 dilation, step1, step2, step3, step4 = thick(img)
@@ -131,27 +133,6 @@ canvas.pack()
 canvas.create_text(margin_size+img.shape[1]/2, margin_size-40, text='Input Image', font=font)
 setPhotoOnCanvas(canvas, img, margin_size, margin_size-20, photo_list)
 
-
-#Buttons
-update_button = Button(root, text='Update Images')
-load_button = Button(root, text='Load Image')
-
-selected_mask_var = StringVar()
-selected_mask_var.set(mask_names[0])  # set the default mask to the first in the list
-mask_dropdown = OptionMenu(root, selected_mask_var, *mask_names)
-
-selected_mask_var.trace("w", update_mask_image)
-
-save_button = Button(root, text='Save Image')
-change_lang_radio = Radiobutton(root, text='Change language', variable=1, value=1)
-
-
-# Place the buttons to the right of the input image
-update_button_window = canvas.create_window(margin_size*2 + img.shape[1] + 25, margin_size, window=update_button)
-load_button_window = canvas.create_window(margin_size*2 + img.shape[1] + 25, margin_size+40, window=load_button)
-mask_dropdown_window = canvas.create_window(margin_size*2 + img.shape[1] + 25, margin_size+80, window=mask_dropdown)
-
-
 # Create a table to display the morphological dilation steps
 table_size = (img.shape[1]//1.3, img.shape[0]//1.3)
 table_margin_size = 20
@@ -166,13 +147,29 @@ for i in range(4):
     canvas.create_text(table_x + table_size[0]/2, table_y-10, text=f'Step {i+1}', font=font)
     setPhotoOnCanvas(canvas, cv2.resize(step_img, (int(table_size[0]), int(table_size[1]))), table_x, table_y, photo_list)
 
-
 # Add result image next to the table
 canvas.create_text(margin_size*2 + table_size[0]*2 +  dilation.shape[1]/2, margin_size*2+img.shape[0]-10, text='Result', font=font)
 setPhotoOnCanvas(canvas, dilation, margin_size*2 + table_size[0]*2, margin_size*2+img.shape[0], photo_list)
 
+# Add the mask images
+selected_mask_var = StringVar()
+selected_mask_var.set(mask_names[0])  # set the default mask to the first in the list
+selected_mask_var.trace("w", update_mask_image)
 
-# Add save button
+
+#Buttons
+update_button = Button(root, text='Update Images')
+load_button = Button(root, text='Load Image')
+mask_dropdown = OptionMenu(root, selected_mask_var, *mask_names)
+save_button = Button(root, text='Save Image')
+change_lang_button = Button(root, text='Change language')
+
+
+# Place the buttons on canvas
+update_button_window = canvas.create_window(margin_size*2 + img.shape[1] + 25, margin_size, window=update_button)
+load_button_window = canvas.create_window(margin_size*2 + img.shape[1] + 25, margin_size+40, window=load_button)
+mask_dropdown_window = canvas.create_window(margin_size*2 + img.shape[1] + 25, margin_size+80, window=mask_dropdown)
+change_lang_button = canvas.create_window(margin_size*2 + img.shape[1] + 25, margin_size+120, window=change_lang_button)
 save_button_window = canvas.create_window(margin_size*2 + table_size[0]*2 +  dilation.shape[1]/2, margin_size*2+img.shape[0]+table_margin_size+table_size[1]+50, window=save_button)
 
 
