@@ -148,7 +148,7 @@ for i in range(4):
     setPhotoOnCanvas(canvas, cv2.resize(step_img, (int(table_size[0]), int(table_size[1]))), table_x, table_y, photo_list)
 
 # Add result image next to the table
-canvas.create_text(margin_size*2 + table_size[0]*2 +  dilation.shape[1]/2, margin_size*2+img.shape[0]-10, text='Result', font=font)
+canvas.create_text(margin_size*2 + table_size[0]*2 +  img.shape[1]/2, margin_size*2+img.shape[0]-10, text='Result', font=font)
 setPhotoOnCanvas(canvas, dilation, margin_size*2 + table_size[0]*2, margin_size*2+img.shape[0], photo_list)
 
 # Add the mask images
@@ -170,7 +170,7 @@ update_button_window = canvas.create_window(margin_size*2 + img.shape[1] + 25, m
 load_button_window = canvas.create_window(margin_size*2 + img.shape[1] + 25, margin_size+40, window=load_button)
 mask_dropdown_window = canvas.create_window(margin_size*2 + img.shape[1] + 25, margin_size+80, window=mask_dropdown)
 change_lang_button = canvas.create_window(margin_size*2 + img.shape[1] + 25, margin_size+120, window=change_lang_button)
-save_button_window = canvas.create_window(margin_size*2 + table_size[0]*2 +  dilation.shape[1]/2, margin_size*2+img.shape[0]+table_margin_size+table_size[1]+50, window=save_button)
+save_button_window = canvas.create_window(margin_size*2 + table_size[0]*2 +  img.shape[1]/2, margin_size*2+img.shape[0]+table_margin_size+table_size[1]+50, window=save_button)
 
 
 # Display default mask image
