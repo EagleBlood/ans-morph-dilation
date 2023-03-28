@@ -8,9 +8,11 @@ import masks as msk
 #Global variables
 program_dir = os.path.dirname(os.path.abspath(__file__))
 
+val = 0
 margin_size = 70
 background_color = (255, 255, 255)
 font = cv2.FONT_HERSHEY_SIMPLEX
+selected_file_path = ""
 photo_list = []
 mask_filenames = {
     "Default Mask": "mask/Default.png",
@@ -26,7 +28,7 @@ mask_ref = None
 
 
 #Mask functions
-def thick(img):
+def thick(img, mask):
     imgA = np.array(img)
     
     img1 = np.array(imgA,np.uint8)
@@ -39,7 +41,8 @@ def thick(img):
     masked3 = np.zeros((3,3), np.uint8)
     masked4 = np.zeros((3,3), np.uint8)
 
-    mask = msk.defaultMask()
+    tab = np.zeros((3,3), np.uint8)
+    tab[0,1] = 1
     
     for y in range(0,img.shape[0]-2):
         for x in range(0,img.shape[1]-2):
@@ -104,18 +107,11 @@ def load_img(path):
     img = cv2.imread(path, 0)
     return img
 
-def update_main_image(canvas, input_img_var, selected_file_path):
-    global image_ref # To prevent garbage collection
-
-    update_image = load_img(selected_file_path)
-    update_image = cv2.resize(update_image, (228, 164))
-    update_image = Image.fromarray(update_image)
-    update_image = ImageTk.PhotoImage(update_image)
-
-    canvas.itemconfig(input_img_var, image=update_image)
-    image_ref = update_image
-
-    return input_img_var
+def setPhotoOnCanvas(canvas, img, x, y, photo_list):
+    img_pil = Image.fromarray(img)
+    img_tk = ImageTk.PhotoImage(img_pil)
+    photo_list.append(img_tk)
+    img_del = canvas.create_image(x, y, image=photo_list[-1], anchor='nw')
 
 def update_mask_image(*args):
     global mask_ref # To prevent garbage collection
@@ -128,7 +124,10 @@ def update_mask_image(*args):
     mask_img_var = canvas.create_image(margin_size*4 + img.shape[0] + 50, margin_size-20, image=mask_img, anchor='nw')
     mask_ref = mask_img
 
-    return mask_img_var
+def update_main_image():
+    update_image = loadImg(selected_file_path)
+    update_image = cv2.resize(update_image, (228, 164))
+    setPhotoOnCanvas(canvas, update_image, margin_size, margin_size-30, photo_list)
 
 def create_slider(parent):
     slider_frame = Frame(parent)
@@ -141,13 +140,6 @@ def create_slider(parent):
 
 def on_slider_move(value):
     print(f"Slider value: {value}")
-    return value
-
-def thic_iter(fun, iter, img):
-    imgTab = fun(img)
-    for a in range(iter-1):
-        imgTab = fun(imgTab[0])
-    return imgTab
 
 def open_file_dialog():
     file_path = filedialog.askopenfilename(
@@ -159,6 +151,9 @@ def open_file_dialog():
     selected_file_path = file_path
 
     update_main_image(canvas, input_img_var, selected_file_path)
+    if file_path:
+        update_main_image()
+
 
 def save_file():
     file_path = filedialog.asksaveasfilename(initialdir=os.getcwd(), defaultextension=".jpg", filetypes=[(".jpg", "*.jpg"), ("All Files", "*.*")])
@@ -171,8 +166,9 @@ img = cv2.imread(r'ertka.bmp', 0)
 img = cv2.resize(img, (228, 164))
 
 
+
 # Apply the morphological dilation
-dilation, step1, step2, step3, step4 = thick(img)
+dilation, step1, step2, step3, step4 = thick(img, msk.defaultMask())
 
 
 # Create a window and canvas to display the images
