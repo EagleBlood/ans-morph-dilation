@@ -1,53 +1,42 @@
-import tkinter as tk
+from tkinter import *
 from PIL import Image, ImageTk
-import os
 
-# function to update the displayed mask image
-def update_mask_image(*args):
-    mask_name = selected_mask_var.get()
-    mask_filename = mask_filenames[mask_name]
-    mask_path = os.path.join(program_dir, mask_filename)
-    mask_image = Image.open(mask_path)
-    mask_image_tk = ImageTk.PhotoImage(mask_image)
-    mask_canvas.itemconfig(mask_canvas_image, image=mask_image_tk)
-    mask_canvas.image = mask_image_tk  # store a reference to the image to prevent garbage collection
+def on_slider_move(value):
+    print(f"Slider value: {value}")
 
-window = tk.Tk()
-window.title("Mask Viewer")
+def setPhotoOnCanvas(canvas, img, x, y, photo_list):
+    photo = ImageTk.PhotoImage(img)
+    photo_list.append(photo)
+    canvas.create_image(x, y, image=photo, anchor=NW)
+    
+def create_slider(parent):
+    slider_frame = Frame(parent)
+    slider_frame.pack()
+    
+    slider_label = Label(slider_frame, text="Slider")
+    slider_label.pack(side=LEFT)
+    
+    slider = Scale(slider_frame, from_=0, to=100, orient=HORIZONTAL, command=on_slider_move)
+    slider.pack(side=LEFT)
+    
+    return slider, slider_frame
 
-program_dir = os.path.dirname(os.path.abspath(__file__))
+root = Tk()
+root.geometry("800x600")
+root.title("Slider Demo")
 
-# dictionary mapping mask names to their file paths
-mask_filenames = {
-    "Golay Mask C ": "mask/maskC.png",
-    "Golay Mask D": "mask/maskD.png",
-    "Golay Mask E": "mask/maskE.png",
-}
+img = Image.open("ertka.bmp")
+mask_img = Image.open("ertka.bmp").convert("L")
+photo_list = []
 
-# create a list of mask names
-mask_names = list(mask_filenames.keys())
+canvas = Canvas(root, width=800, height=600)
+canvas.pack()
 
-# create a canvas for displaying the mask image
-mask_canvas = tk.Canvas(window, width=400, height=400)
-mask_canvas.pack()
+margin_size = 70
 
-# create a placeholder image
-placeholder_image = Image.new("RGB", (400, 400), "black")
-placeholder_image_tk = ImageTk.PhotoImage(placeholder_image)
+setPhotoOnCanvas(canvas, img, margin_size, margin_size, photo_list)
 
-# create an image item on the canvas for the placeholder image
-mask_canvas_image = mask_canvas.create_image(0, 0, anchor="nw", image=placeholder_image_tk)
+slider, slider_frame = create_slider(root)
+slider_window = canvas.create_window(margin_size, margin_size + img.height + margin_size//2, anchor=NW, window=slider_frame)
 
-# create a dropdown menu for selecting the mask
-selected_mask_var = tk.StringVar()
-selected_mask_var.set(mask_names[0])  # set the default mask to the first in the list
-mask_dropdown = tk.OptionMenu(window, selected_mask_var, *mask_names)
-mask_dropdown.pack()
-
-# bind the update_mask_image function to the StringVar's trace method
-selected_mask_var.trace("w", update_mask_image)
-
-# call the update_mask_image function initially to display the default mask image
-update_mask_image()
-
-window.mainloop()
+root.mainloop()
