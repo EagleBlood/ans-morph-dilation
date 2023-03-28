@@ -1,7 +1,7 @@
 from PIL import Image, ImageTk
 import numpy as np
 import cv2
-from tkinter import SINGLE, Button, OptionMenu, Scale, StringVar, Tk, Canvas, HORIZONTAL, Frame, Label, LEFT
+from tkinter import SINGLE, Button, OptionMenu, Scale, StringVar, Tk, Canvas, HORIZONTAL, Frame, Label, LEFT, filedialog
 import os
 import masks as msk
 
@@ -111,6 +111,11 @@ def update_mask_image(*args):
     mask_img = loadImg(os.path.join(program_dir, mask_filenames[mask_name]))
     setPhotoOnCanvas(canvas, mask_img, margin_size*4 + img.shape[0] + 50, margin_size-20, photo_list)
 
+def update_main_image():
+    update_image = loadImg(selected_file_path)
+    update_image = cv2.resize(update_image, (228, 164))
+    setPhotoOnCanvas(canvas, update_image, margin_size, margin_size-20, photo_list)
+
 def create_slider(parent):
     slider_frame = Frame(parent)
     slider_frame.pack()
@@ -130,6 +135,25 @@ def thicIter(fun, iter, img):
     for a in range(iter-1):
         imgTab = fun(imgTab[0])
     return imgTab
+
+def open_file_dialog():
+    root = Tk()
+    root.withdraw()
+    file_path = filedialog.askopenfilename(
+        initialdir=os.getcwd(),
+        title="Select a file",
+        filetypes=(("Image files", "*.bmp;*.jpg;*.png"), ("All files", "*.*")),
+    )
+    global selected_file_path
+    selected_file_path = file_path
+
+    update_main_image()
+
+
+def save_file():
+    file_path = filedialog.asksaveasfilename(initialdir=os.getcwd(), defaultextension=".jpg", filetypes=[(".jpg", "*.jpg"), ("All Files", "*.*")])
+    if file_path:
+        cv2.imwrite(file_path, dilation)
 
 
 # Load the input image
@@ -175,12 +199,17 @@ for i in range(4):
 canvas.create_text(margin_size*2 + table_size[0]*2 +  img.shape[1]/2, margin_size*2+img.shape[0]-10, text='Result', font=font)
 setPhotoOnCanvas(canvas, dilation, margin_size*2 + table_size[0]*2, margin_size*2+img.shape[0], photo_list)
 
+# Upade the main images
+selected_file_path = ""
+selected_image_var = StringVar()
+selected_image_var.set(selected_file_path)
+selected_image_var.trace("w", update_main_image)
 
 #Buttons
 update_button = Button(root, text='Update Images')
-load_button = Button(root, text='Load Image')
+load_button = Button(root, text='Load Image', command=open_file_dialog)
 mask_dropdown = OptionMenu(root, selected_mask_var, *mask_names)
-save_button = Button(root, text='Save Image')
+save_button = Button(root, text='Save Image', command=save_file)
 change_lang_button = Button(root, text='Change language')
 slider, slider_frame = create_slider(root)
 
@@ -194,8 +223,10 @@ save_button_window = canvas.create_window(margin_size*2 + table_size[0]*2 +  img
 slider_window = canvas.create_window(margin_size*2 + img.shape[1]*2, margin_size+160, window=slider_frame)
 
 
+
 # Display default mask image
 update_mask_image()
+#update_main_image()
 
 
 root.mainloop()
