@@ -1,42 +1,54 @@
-from tkinter import *
-from PIL import Image, ImageTk
+import tkinter as tk
+import cv2
+from PIL import ImageTk, Image
 
-def on_slider_move(value):
-    print(f"Slider value: {value}")
+# Load the images for each dilation step
+step1 = cv2.imread('step1.png')
+step2 = cv2.imread('step2.png')
+step3 = cv2.imread('step3.png')
+step4 = cv2.imread('step4.png')
 
-def setPhotoOnCanvas(canvas, img, x, y, photo_list):
-    photo = ImageTk.PhotoImage(img)
-    photo_list.append(photo)
-    canvas.create_image(x, y, image=photo, anchor=NW)
-    
-def create_slider(parent):
-    slider_frame = Frame(parent)
-    slider_frame.pack()
-    
-    slider_label = Label(slider_frame, text="Slider")
-    slider_label.pack(side=LEFT)
-    
-    slider = Scale(slider_frame, from_=0, to=100, orient=HORIZONTAL, command=on_slider_move)
-    slider.pack(side=LEFT)
-    
-    return slider, slider_frame
+# Initialize Tkinter
+root = tk.Tk()
 
-root = Tk()
-root.geometry("800x600")
-root.title("Slider Demo")
+# Load the original image
+img = cv2.imread('original.png')
 
-img = Image.open("ertka.bmp")
-mask_img = Image.open("ertka.bmp").convert("L")
-photo_list = []
+# Calculate the canvas size
+canvas_width = img.shape[1] + 2 * 20
+canvas_height = img.shape[0] + 4 * 20 + 40
 
-canvas = Canvas(root, width=800, height=600)
+# Create a canvas
+canvas = tk.Canvas(root, width=canvas_width, height=canvas_height)
 canvas.pack()
 
-margin_size = 70
+# Create a table to display the morphological dilation steps
+table_size = (img.shape[1]//1.3, img.shape[0]//1.3)
+table_margin_size = 20
+table_start_x = 20
+table_start_y = 3 * table_margin_size + 40
 
-setPhotoOnCanvas(canvas, img, margin_size, margin_size, photo_list)
+for i in range(4):
+    row = i // 2
+    col = i % 2
+    step_img = [step1, step2, step3, step4][i]
+    table_x = table_start_x + col * (table_size[0] + table_margin_size)
+    table_y = table_start_y + row * (table_size[1] + table_margin_size)
 
-slider, slider_frame = create_slider(root)
-slider_window = canvas.create_window(margin_size, margin_size + img.height + margin_size//2, anchor=NW, window=slider_frame)
+    # Add a label with the step number
+    canvas.create_text(table_x + table_size[0] / 2, table_y - 10, text=f'Step {i + 1}', font=('Arial', 12))
 
+    # Convert the image to a format that Tkinter can display
+    img_tk = ImageTk.PhotoImage(Image.fromarray(step_img))
+
+    # Add the image to the canvas with the specified offset
+    canvas.create_image(table_x, table_y, image=img_tk, anchor='nw')
+
+# Convert the original image to a format that Tkinter can display
+img_tk = ImageTk.PhotoImage(Image.fromarray(img))
+
+# Add the image to the canvas with the specified offset
+canvas.create_image(20, 20, image=img_tk, anchor='nw')
+
+# Start the Tkinter event loop
 root.mainloop()

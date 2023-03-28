@@ -20,6 +20,10 @@ mask_filenames = {
 }
 mask_names = list(mask_filenames.keys())
 
+#Garbage collector prevention
+image_ref = None
+mask_ref = None
+
 
 #Mask functions
 def thick(img):
@@ -96,25 +100,35 @@ def thick(img):
 
     return imgA, img1, img2, img3, img4
 
-def loadImg(path):
+def load_img(path):
     img = cv2.imread(path, 0)
     return img
 
-def setPhotoOnCanvas(canvas, img, x, y, photo_list):
-    img_pil = Image.fromarray(img)
-    img_tk = ImageTk.PhotoImage(img_pil)
-    photo_list.append(img_tk)
-    img_del = canvas.create_image(x, y, image=photo_list[-1], anchor='nw')
+def update_main_image(canvas, input_img_var, selected_file_path):
+    global image_ref # To prevent garbage collection
+
+    update_image = load_img(selected_file_path)
+    update_image = cv2.resize(update_image, (228, 164))
+    update_image = Image.fromarray(update_image)
+    update_image = ImageTk.PhotoImage(update_image)
+
+    canvas.itemconfig(input_img_var, image=update_image)
+    image_ref = update_image
+
+    return input_img_var
 
 def update_mask_image(*args):
-    mask_name = selected_mask_var.get()
-    mask_img = loadImg(os.path.join(program_dir, mask_filenames[mask_name]))
-    setPhotoOnCanvas(canvas, mask_img, margin_size*4 + img.shape[0] + 50, margin_size-20, photo_list)
+    global mask_ref # To prevent garbage collection
 
-def update_main_image():
-    update_image = loadImg(selected_file_path)
-    update_image = cv2.resize(update_image, (228, 164))
-    setPhotoOnCanvas(canvas, update_image, margin_size, margin_size-30, photo_list)
+    mask_name = selected_mask_var.get()
+    mask_img = load_img(os.path.join(program_dir, mask_filenames[mask_name]))
+    mask_img = Image.fromarray(mask_img)
+    mask_img = ImageTk.PhotoImage(mask_img)
+
+    mask_img_var = canvas.create_image(margin_size*4 + img.shape[0] + 50, margin_size-20, image=mask_img, anchor='nw')
+    mask_ref = mask_img
+
+    return mask_img_var
 
 def create_slider(parent):
     slider_frame = Frame(parent)
@@ -126,19 +140,16 @@ def create_slider(parent):
     return slider, slider_frame
 
 def on_slider_move(value):
-    dilation, step1, step2, step3, step4 = thicIter(thick, value, img)
     print(f"Slider value: {value}")
     return value
 
-def thicIter(fun, iter, img):
+def thic_iter(fun, iter, img):
     imgTab = fun(img)
     for a in range(iter-1):
         imgTab = fun(imgTab[0])
     return imgTab
 
 def open_file_dialog():
-    root = Tk()
-    root.withdraw()
     file_path = filedialog.askopenfilename(
         initialdir=os.getcwd(),
         title="Select a file",
@@ -147,7 +158,7 @@ def open_file_dialog():
     global selected_file_path
     selected_file_path = file_path
 
-    update_main_image()
+    update_main_image(canvas, input_img_var, selected_file_path)
 
 def save_file():
     file_path = filedialog.asksaveasfilename(initialdir=os.getcwd(), defaultextension=".jpg", filetypes=[(".jpg", "*.jpg"), ("All Files", "*.*")])
@@ -177,32 +188,37 @@ selected_mask_var.set(mask_names[0])  # set the default mask to the first in the
 selected_mask_var.trace("w", update_mask_image)
 
 
+# Add the images on cavas
 canvas.create_text(margin_size+img.shape[1]/2, margin_size-40, text='Input Image', font=font)
-setPhotoOnCanvas(canvas, img, margin_size, margin_size-20, photo_list)
+img_input = ImageTk.PhotoImage(Image.fromarray(img))
+input_img_var = canvas.create_image(margin_size, margin_size-20, image=img_input, anchor='nw')
 
 # Create a table to display the morphological dilation steps
 table_size = (img.shape[1]//1.3, img.shape[0]//1.3)
 table_margin_size = 20
 table_start_x = margin_size
 table_start_y = margin_size*3+40
+step_images = {}
+
 for i in range(4):
     row = i // 2
     col = i % 2
     step_img = [step1, step2, step3, step4][i]
-    table_x = table_start_x + col * (table_size[0] + table_margin_size) 
+    table_x = table_start_x + col * (table_size[0] + table_margin_size)
     table_y = table_start_y + row * (table_size[1] + table_margin_size)
-    canvas.create_text(table_x + table_size[0]/2, table_y-10, text=f'Step {i+1}', font=font)
-    setPhotoOnCanvas(canvas, cv2.resize(step_img, (int(table_size[0]), int(table_size[1]))), table_x, table_y, photo_list)
+
+    canvas.create_text(table_x + table_size[0] / 2, table_y - 10, text=f'Step {i + 1}', font=('Arial', 12))
+    step_img_resize = cv2.resize(step_img, (int(table_size[0]), int(table_size[1])))
+    step_img_tk = ImageTk.PhotoImage(Image.fromarray(step_img_resize))
+    step_images[i] = step_img_tk
+    step_img_var = canvas.create_image(table_x, table_y, image=step_images[i], anchor='nw')
+
 
 # Add result image next to the table
 canvas.create_text(margin_size*2 + table_size[0]*2 +  img.shape[1]/2, margin_size*2+img.shape[0]-10, text='Result', font=font)
-setPhotoOnCanvas(canvas, dilation, margin_size*2 + table_size[0]*2, margin_size*2+img.shape[0], photo_list)
+img_result = ImageTk.PhotoImage(Image.fromarray(dilation))
+img_result_var = canvas.create_image(margin_size*2 + table_size[0]*2, margin_size*2+img.shape[0], image=img_result, anchor='nw')
 
-# Upade the main images
-selected_file_path = ""
-selected_image_var = StringVar()
-selected_image_var.set(selected_file_path)
-selected_image_var.trace("w", update_main_image)
 
 #Buttons
 update_button = Button(root, text='Update Images')
@@ -222,10 +238,16 @@ save_button_window = canvas.create_window(margin_size*2 + table_size[0]*2 +  img
 slider_window = canvas.create_window(margin_size*2 + img.shape[1]*2, margin_size+160, window=slider_frame)
 
 
+#Po co i co to robi?
+# # Update the main image
+# selected_file_path = ""
+# selected_image_var = StringVar()
+# selected_image_var.set(selected_file_path)
+# selected_image_var.trace("w", update_main_image)
 
-# Display default mask image
+
+# Set default mask image
 update_mask_image()
-#update_main_image()
 
 
 root.mainloop()
