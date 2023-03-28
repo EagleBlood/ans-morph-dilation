@@ -114,7 +114,7 @@ def update_mask_image(*args):
 def update_main_image():
     update_image = loadImg(selected_file_path)
     update_image = cv2.resize(update_image, (228, 164))
-    setPhotoOnCanvas(canvas, update_image, margin_size, margin_size-20, photo_list)
+    setPhotoOnCanvas(canvas, update_image, margin_size, margin_size-30, photo_list)
 
 def create_slider(parent):
     slider_frame = Frame(parent)
@@ -148,7 +148,6 @@ def open_file_dialog():
     selected_file_path = file_path
 
     update_main_image()
-
 
 def save_file():
     file_path = filedialog.asksaveasfilename(initialdir=os.getcwd(), defaultextension=".jpg", filetypes=[(".jpg", "*.jpg"), ("All Files", "*.*")])
