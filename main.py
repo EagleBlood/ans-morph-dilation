@@ -24,6 +24,9 @@ mask_names = list(mask_filenames.keys())
 #Garbage collector prevention
 image_ref = None
 mask_ref = None
+lang = "en"
+text_1, text_2, text_3 = None , None, None
+
 
 
 #Mask functions
@@ -131,7 +134,7 @@ def create_slider(parent):
     slider_frame = Frame(parent)
     slider_frame.pack()
     
-    slider = Scale(slider_frame, from_=1, to=10, length=200, orient=HORIZONTAL, label="Iterations", command=on_slider_move)
+    slider = Scale(slider_frame, from_=1, to=10, length=200, orient=HORIZONTAL, label="Iter", command=on_slider_move)
     slider.pack(side=LEFT)
     
     return slider, slider_frame
@@ -182,6 +185,65 @@ def execute_dilation():
     dilation_iter, step_iter_1, step_iter_2, step_iter_3, step_iter_4 = thic_iter(thick, slider.get(), img)
     setPhotoOnCanvas(canvas, dilation_iter, 0, 0, photo_list)
 
+dictionary = {
+    "Input Image": "Obraz wejściowy",
+    "Step ": "Krok ",
+    "Result Image": "Obraz Wynikowy",
+    "Update Image": "Aktualizuj obraz",
+    "Load Image": "Wczytaj obraz",
+    "Save Image": "Zapisz obraz",
+    "Change language": "Zmień język",
+}
+
+def translate_text(text, lang):
+    if lang == "en":
+        return text
+    elif lang == "pl":
+        if text in dictionary:
+            return dictionary[text]
+        else:
+            return text
+    else:
+        return text
+    
+def change_language():
+    global lang
+    if lang == "en":
+        lang = "pl"
+    else:
+        lang = "en"
+    update_text()
+    update_button_text(update_button, "Update Image")
+    update_button_text(load_button, "Load Image")
+    update_button_text(save_button, "Save Image")
+    update_button_text(change_lang_button, "Change language")
+
+def update_button_text(button, button_text):
+    if button_text in dictionary:
+        translated_text = translate_text(button_text, lang)
+        button.config(text=translated_text)
+    else:
+        button.config(text=button_text)
+
+def update_text():
+    global text_1, text_2, text_3
+    
+    canvas.delete(text_1, text_3)
+    text_1 = canvas.create_text(margin_size+img.shape[1]/2, margin_size-40, text=translate_text("Input Image", lang), font=font)
+
+
+    canvas.delete(text_2)
+
+    for i in range(4):
+        row = i // 2
+        col = i % 2
+        table_x = table_start_x + col * (table_size[0] + table_margin_size) 
+        table_y = table_start_y + row * (table_size[1] + table_margin_size)
+        text_2 = canvas.create_text(table_x + table_size[0]/2, table_y-10, text=translate_text(f'Step {i+1}', lang), font=font)
+    
+
+    text_3 = canvas.create_text(margin_size*2 + table_size[0]*2 +  img.shape[1]/2, margin_size*2+img.shape[0]-10, text=translate_text("Result Image", lang), font=font)
+
 
 
 
@@ -208,7 +270,6 @@ selected_mask_var.trace("w", update_mask_image)
 
 
 # Add the images on cavas
-canvas.create_text(margin_size+img.shape[1]/2, margin_size-40, text='Input Image', font=font)
 input_img_var = setPhotoOnCanvas(canvas, img, margin_size, margin_size-20, photo_list)
 
 # Create a table to display the morphological dilation steps
@@ -222,21 +283,21 @@ for i in range(4):
     step_img = [step1, step2, step3, step4][i]
     table_x = table_start_x + col * (table_size[0] + table_margin_size) 
     table_y = table_start_y + row * (table_size[1] + table_margin_size)
-    canvas.create_text(table_x + table_size[0]/2, table_y-10, text=f'Step {i+1}', font=font)
+    # canvas.create_text(table_x + table_size[0]/2, table_y-10, text=f'Step {i+1}', font=font)
     step_img_var = setPhotoOnCanvas(canvas, cv2.resize(step_img, (int(table_size[0]), int(table_size[1]))), table_x, table_y, photo_list)
 
 
 # Add result image next to the table
-canvas.create_text(margin_size*2 + table_size[0]*2 +  img.shape[1]/2, margin_size*2+img.shape[0]-10, text='Result', font=font)
+# canvas.create_text(margin_size*2 + table_size[0]*2 +  img.shape[1]/2, margin_size*2+img.shape[0]-10, text='Result', font=font)
 img_result_var = setPhotoOnCanvas(canvas, dilation, margin_size*2 + table_size[0]*2, margin_size*2+img.shape[0], photo_list)
 
 
 #Buttons
-update_button = Button(root, text='Update Images', command=execute_dilation)
+update_button = Button(root, text='Update Image', command=execute_dilation)
 load_button = Button(root, text='Load Image', command=open_file_dialog)
 mask_dropdown = OptionMenu(root, selected_mask_var, *mask_names)
 save_button = Button(root, text='Save Image', command=save_file)
-change_lang_button = Button(root, text='Change language')
+change_lang_button = Button(root, text='Change language', command=change_language)
 slider, slider_frame = create_slider(root)
 
 
@@ -250,6 +311,7 @@ slider_window = canvas.create_window(margin_size*2 + img.shape[1]*2, margin_size
 
 
 # Set default mask image
+update_text()
 update_mask_image()
 
 
