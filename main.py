@@ -181,8 +181,7 @@ def thic_iter(fun, iter, img):
     return imgTab
 
 def execute_dilation():
-    update_main_image(canvas, input_img_var, selected_file_path)
-    dilation_iter, step_iter_1, step_iter_2, step_iter_3, step_iter_4 = thic_iter(thick, slider.get(), img)
+    dilation_iter, step_iter_1, step_iter_2, step_iter_3, step_iter_4 = thic_iter(thick, slider.get(), input_img_var)
     setPhotoOnCanvas(canvas, dilation_iter, 0, 0, photo_list)
 
 dictionary = {
