@@ -116,8 +116,6 @@ def update_main_image(canvas, input_img_var, selected_file_path):
     canvas.itemconfig(input_img_var, image=update_image)
     image_ref = update_image
 
-    return input_img_var
-
 def update_mask_image(*args):
     global mask_ref # To prevent garbage collection
 
@@ -129,8 +127,6 @@ def update_mask_image(*args):
     mask_img_var = canvas.create_image(margin_size*4 + img.shape[0] + 50, margin_size-20, image=mask_img, anchor='nw')
     mask_ref = mask_img
 
-    return mask_img_var
-
 def create_slider(parent):
     slider_frame = Frame(parent)
     slider_frame.pack()
@@ -139,6 +135,20 @@ def create_slider(parent):
     slider.pack(side=LEFT)
     
     return slider, slider_frame
+
+def setPhotoOnCanvas(canvas, img, x, y, photo_list):
+    # Żeby można było się dostać do modyfikacji obrazu trzeba podać jako argument id obrazu które zwraca funkcja
+    img_pil = Image.fromarray(img)
+    img_tk = ImageTk.PhotoImage(img_pil)
+    photo_list.append(img_tk)
+    img_return = canvas.create_image(x, y, image=photo_list[-1], anchor='nw')
+    return img_return
+
+def update_photo_on_canvas(canvas, img_id, img_to_update):
+    img_pil = Image.fromarray(img_to_update)
+    img_tk = ImageTk.PhotoImage(img_pil)
+    canvas.itemconfig(img_id, image=img_tk)
+    return img_tk
 
 def on_slider_move(value):
     print(f"Slider value: {value}")
@@ -162,15 +172,15 @@ def save_file():
         cv2.imwrite(file_path, dilation)
 
 def thic_iter(fun, iter, img):
-    imgTab = fun(imgTab)
+    imgTab = fun(img)
     for a in range(iter-1):
         imgTab = fun(imgTab[0])
     return imgTab
 
 def execute_dilation():
-    dilatate_iter = thic_iter(thick, slider.get(), img)
-    canvas.create_image(margin_size, margin_size, image=dilatate_iter, anchor='nw')
-
+    update_main_image(canvas, input_img_var, selected_file_path)
+    dilation_iter, step_iter_1, step_iter_2, step_iter_3, step_iter_4 = thic_iter(thick, slider.get(), img)
+    setPhotoOnCanvas(canvas, dilation_iter, 0, 0, photo_list)
 
 
 
@@ -199,34 +209,26 @@ selected_mask_var.trace("w", update_mask_image)
 
 # Add the images on cavas
 canvas.create_text(margin_size+img.shape[1]/2, margin_size-40, text='Input Image', font=font)
-img_input = ImageTk.PhotoImage(Image.fromarray(img))
-input_img_var = canvas.create_image(margin_size, margin_size-20, image=img_input, anchor='nw')
+input_img_var = setPhotoOnCanvas(canvas, img, margin_size, margin_size-20, photo_list)
 
 # Create a table to display the morphological dilation steps
 table_size = (img.shape[1]//1.3, img.shape[0]//1.3)
 table_margin_size = 20
 table_start_x = margin_size
 table_start_y = margin_size*3+40
-step_images = {}
-
 for i in range(4):
     row = i // 2
     col = i % 2
     step_img = [step1, step2, step3, step4][i]
-    table_x = table_start_x + col * (table_size[0] + table_margin_size)
+    table_x = table_start_x + col * (table_size[0] + table_margin_size) 
     table_y = table_start_y + row * (table_size[1] + table_margin_size)
-
-    canvas.create_text(table_x + table_size[0] / 2, table_y - 10, text=f'Step {i + 1}', font=('Arial', 12))
-    step_img_resize = cv2.resize(step_img, (int(table_size[0]), int(table_size[1])))
-    step_img_tk = ImageTk.PhotoImage(Image.fromarray(step_img_resize))
-    step_images[i] = step_img_tk
-    img_step_var = canvas.create_image(table_x, table_y, image=step_images[i], anchor='nw')
+    canvas.create_text(table_x + table_size[0]/2, table_y-10, text=f'Step {i+1}', font=font)
+    step_img_var = setPhotoOnCanvas(canvas, cv2.resize(step_img, (int(table_size[0]), int(table_size[1]))), table_x, table_y, photo_list)
 
 
 # Add result image next to the table
 canvas.create_text(margin_size*2 + table_size[0]*2 +  img.shape[1]/2, margin_size*2+img.shape[0]-10, text='Result', font=font)
-img_result = ImageTk.PhotoImage(Image.fromarray(dilation))
-img_result_var = canvas.create_image(margin_size*2 + table_size[0]*2, margin_size*2+img.shape[0], image=img_result, anchor='nw')
+img_result_var = setPhotoOnCanvas(canvas, dilation, margin_size*2 + table_size[0]*2, margin_size*2+img.shape[0], photo_list)
 
 
 #Buttons
@@ -245,6 +247,7 @@ mask_dropdown_window = canvas.create_window(margin_size*2 + img.shape[1] + 25, m
 change_lang_window = canvas.create_window(margin_size*2 + img.shape[1] + 25, margin_size+120, window=change_lang_button)
 save_button_window = canvas.create_window(margin_size*2 + table_size[0]*2 +  img.shape[1]/2, margin_size*2+img.shape[0]+table_margin_size+table_size[1]+50, window=save_button)
 slider_window = canvas.create_window(margin_size*2 + img.shape[1]*2, margin_size+160, window=slider_frame)
+
 
 # Set default mask image
 update_mask_image()
