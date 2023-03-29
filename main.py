@@ -7,7 +7,7 @@ import masks as msk
 
 #Global variables
 program_dir = os.path.dirname(os.path.abspath(__file__))
-global img
+global img, dylation
 margin_size = 70
 background_color = (255, 255, 255)
 font = cv2.FONT_HERSHEY_SIMPLEX
@@ -35,6 +35,8 @@ mask_names = list(mask_filenames.keys())
 #Garbage collector prevention
 image_ref = None
 mask_ref = None
+img_res_ref = None
+img_step_ref = None
 lang = "en"
 text_1, text_2, text_3 = None , None, None
 
@@ -130,11 +132,6 @@ def setPhotoOnCanvas(canvas, img, x, y, photo_list):
     return img_return
 
 
-
-def on_slider_move(value):
-    print(f"Slider value: {value}")
-    return value
-
 def update_main_image(canvas, input_img_var, selected_file_path):
     global image_ref # To prevent garbage collection
     global img
@@ -149,6 +146,42 @@ def update_main_image(canvas, input_img_var, selected_file_path):
     image_ref = update_image
     
     return update_image
+
+def update_step_image(canvas, step_img_var, images):
+    global img_step_ref # To prevent garbage collection
+
+    for i in range(4):
+        row = i // 2
+        col = i % 2
+
+        table_x = table_start_x + col * (table_size[0] + table_margin_size) 
+        table_y = table_start_y + row * (table_size[1] + table_margin_size)
+
+        img = images[i]
+        
+        img_pil = Image.fromarray(img)
+        img_resized = img_pil.resize(int(table_size))
+        img_tk = ImageTk.PhotoImage(img_resized)
+
+        canvas.itemconfig(step_img_var, image=img_tk)
+        img_step_ref = img_tk
+
+    return step_img_var
+
+def update_result_image(canvas, img_result_var, img):
+    global img_res_ref # To prevent garbage collection
+
+    img_pil = Image.fromarray(img)
+    img_tk = ImageTk.PhotoImage(img_pil)
+    
+    canvas.itemconfig(img_result_var, image=img_tk)
+    img_res_ref = img_tk
+    
+    return img_result_var
+
+def on_slider_move(value):
+    print(f"Slider value: {value}")
+    return value
 
 def update_mask_image(*args):
     global mask_ref # To prevent garbage collection
@@ -195,6 +228,7 @@ def load_img(path):
     return img
 
 
+
 # Morphological functions
 def thic_iter(fun, iter, img):
     imgTab = fun(img)
@@ -203,9 +237,10 @@ def thic_iter(fun, iter, img):
     return imgTab
 
 def execute_dilation():
-    #update_main_image(canvas, input_img_var, selected_file_path,img)
     dilation_iter, step_iter_1, step_iter_2, step_iter_3, step_iter_4 = thic_iter(thick, slider.get(), img)
-    setPhotoOnCanvas(canvas, dilation_iter, 0, 0, photo_list)
+    update_result_image(canvas, img_result_var, dilation_iter)
+    update_step_image(canvas, step_img_var, [step_iter_1, step_iter_2, step_iter_3, step_iter_4])
+
 
 
 # Language functions
