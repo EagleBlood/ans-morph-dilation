@@ -13,12 +13,23 @@ background_color = (255, 255, 255)
 font = cv2.FONT_HERSHEY_SIMPLEX
 photo_list = []
 selected_file_path = ""
+
 mask_filenames = {
     "Default Mask": "mask/Default.png",
     "Golay Mask C ": "mask/maskC.png",
     "Golay Mask E": "mask/maskE.png",
     "Golay Mask D": "mask/maskD.png",
 }
+dictionary = {
+    "Input Image": "Obraz wejściowy",
+    "Step ": "Krok ",
+    "Result Image": "Obraz Wynikowy",
+    "Update Image": "Aktualizuj obraz",
+    "Load Image": "Wczytaj obraz",
+    "Save Image": "Zapisz obraz",
+    "Change language": "Zmień język",
+}
+
 mask_names = list(mask_filenames.keys())
 
 #Garbage collector prevention
@@ -104,9 +115,29 @@ def thick(img):
 
     return imgA, img1, img2, img3, img4
 
-def load_img(path):
-    img = cv2.imread(path, 0)
-    return img
+
+
+
+
+
+# GUI functions
+def setPhotoOnCanvas(canvas, img, x, y, photo_list):
+    # Żeby można było się dostać do modyfikacji obrazu trzeba podać jako argument id obrazu które zwraca funkcja
+    img_pil = Image.fromarray(img)
+    img_tk = ImageTk.PhotoImage(img_pil)
+    photo_list.append(img_tk)
+    img_return = canvas.create_image(x, y, image=photo_list[-1], anchor='nw')
+    return img_return
+
+def update_photo_on_canvas(canvas, img_id, img_to_update):
+    img_pil = Image.fromarray(img_to_update)
+    img_tk = ImageTk.PhotoImage(img_pil)
+    canvas.itemconfig(img_id, image=img_tk)
+    return img_tk
+
+def on_slider_move(value):
+    print(f"Slider value: {value}")
+    return value
 
 def update_main_image(canvas, input_img_var, selected_file_path):
     global image_ref # To prevent garbage collection
@@ -118,6 +149,8 @@ def update_main_image(canvas, input_img_var, selected_file_path):
 
     canvas.itemconfig(input_img_var, image=update_image)
     image_ref = update_image
+
+    return update_image
 
 def update_mask_image(*args):
     global mask_ref # To prevent garbage collection
@@ -139,24 +172,8 @@ def create_slider(parent):
     
     return slider, slider_frame
 
-def setPhotoOnCanvas(canvas, img, x, y, photo_list):
-    # Żeby można było się dostać do modyfikacji obrazu trzeba podać jako argument id obrazu które zwraca funkcja
-    img_pil = Image.fromarray(img)
-    img_tk = ImageTk.PhotoImage(img_pil)
-    photo_list.append(img_tk)
-    img_return = canvas.create_image(x, y, image=photo_list[-1], anchor='nw')
-    return img_return
 
-def update_photo_on_canvas(canvas, img_id, img_to_update):
-    img_pil = Image.fromarray(img_to_update)
-    img_tk = ImageTk.PhotoImage(img_pil)
-    canvas.itemconfig(img_id, image=img_tk)
-    return img_tk
-
-def on_slider_move(value):
-    print(f"Slider value: {value}")
-    return value
-
+# File functions
 def open_file_dialog():
     file_path = filedialog.askopenfilename(
         initialdir=os.getcwd(),
@@ -174,6 +191,12 @@ def save_file():
     if file_path:
         cv2.imwrite(file_path, dilation)
 
+def load_img(path):
+    img = cv2.imread(path, 0)
+    return img
+
+
+# Morphological functions
 def thic_iter(fun, iter, img):
     imgTab = fun(img)
     for a in range(iter-1):
@@ -184,16 +207,8 @@ def execute_dilation():
     dilation_iter, step_iter_1, step_iter_2, step_iter_3, step_iter_4 = thic_iter(thick, slider.get(), input_img_var)
     setPhotoOnCanvas(canvas, dilation_iter, 0, 0, photo_list)
 
-dictionary = {
-    "Input Image": "Obraz wejściowy",
-    "Step ": "Krok ",
-    "Result Image": "Obraz Wynikowy",
-    "Update Image": "Aktualizuj obraz",
-    "Load Image": "Wczytaj obraz",
-    "Save Image": "Zapisz obraz",
-    "Change language": "Zmień język",
-}
 
+# Language functions
 def translate_text(text, lang):
     if lang == "en":
         return text
