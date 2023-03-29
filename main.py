@@ -12,6 +12,7 @@ margin_size = 70
 background_color = (255, 255, 255)
 font = cv2.FONT_HERSHEY_SIMPLEX
 photo_list = []
+selected_file_path = ""
 mask_filenames = {
     "Default Mask": "mask/Default.png",
     "Golay Mask C ": "mask/maskC.png",
@@ -158,7 +159,8 @@ def open_file_dialog():
     global selected_file_path
     selected_file_path = file_path
 
-    update_main_image(canvas, input_img_var, selected_file_path)
+    if file_path:
+        update_main_image(canvas, input_img_var, selected_file_path)
 
 def save_file():
     file_path = filedialog.asksaveasfilename(initialdir=os.getcwd(), defaultextension=".jpg", filetypes=[(".jpg", "*.jpg"), ("All Files", "*.*")])
@@ -236,15 +238,6 @@ mask_dropdown_window = canvas.create_window(margin_size*2 + img.shape[1] + 25, m
 change_lang_window = canvas.create_window(margin_size*2 + img.shape[1] + 25, margin_size+120, window=change_lang_button)
 save_button_window = canvas.create_window(margin_size*2 + table_size[0]*2 +  img.shape[1]/2, margin_size*2+img.shape[0]+table_margin_size+table_size[1]+50, window=save_button)
 slider_window = canvas.create_window(margin_size*2 + img.shape[1]*2, margin_size+160, window=slider_frame)
-
-
-#Po co i co to robi?
-# # Update the main image
-# selected_file_path = ""
-# selected_image_var = StringVar()
-# selected_image_var.set(selected_file_path)
-# selected_image_var.trace("w", update_main_image)
-
 
 # Set default mask image
 update_mask_image()
