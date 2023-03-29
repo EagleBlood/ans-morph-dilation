@@ -144,12 +144,6 @@ def on_slider_move(value):
     print(f"Slider value: {value}")
     return value
 
-def thic_iter(fun, iter, img):
-    imgTab = fun(img)
-    for a in range(iter-1):
-        imgTab = fun(imgTab[0])
-    return imgTab
-
 def open_file_dialog():
     file_path = filedialog.askopenfilename(
         initialdir=os.getcwd(),
@@ -166,6 +160,19 @@ def save_file():
     file_path = filedialog.asksaveasfilename(initialdir=os.getcwd(), defaultextension=".jpg", filetypes=[(".jpg", "*.jpg"), ("All Files", "*.*")])
     if file_path:
         cv2.imwrite(file_path, dilation)
+
+def thic_iter(fun, iter, img):
+    imgTab = fun(imgTab)
+    for a in range(iter-1):
+        imgTab = fun(imgTab[0])
+    return imgTab
+
+def execute_dilation():
+    dilatate_iter = thic_iter(thick, slider.get(), img)
+    canvas.create_image(margin_size, margin_size, image=dilatate_iter, anchor='nw')
+
+
+
 
 
 # Load the input image
@@ -213,7 +220,7 @@ for i in range(4):
     step_img_resize = cv2.resize(step_img, (int(table_size[0]), int(table_size[1])))
     step_img_tk = ImageTk.PhotoImage(Image.fromarray(step_img_resize))
     step_images[i] = step_img_tk
-    step_img_var = canvas.create_image(table_x, table_y, image=step_images[i], anchor='nw')
+    img_step_var = canvas.create_image(table_x, table_y, image=step_images[i], anchor='nw')
 
 
 # Add result image next to the table
@@ -223,7 +230,7 @@ img_result_var = canvas.create_image(margin_size*2 + table_size[0]*2, margin_siz
 
 
 #Buttons
-update_button = Button(root, text='Update Images')
+update_button = Button(root, text='Update Images', command=execute_dilation)
 load_button = Button(root, text='Load Image', command=open_file_dialog)
 mask_dropdown = OptionMenu(root, selected_mask_var, *mask_names)
 save_button = Button(root, text='Save Image', command=save_file)
