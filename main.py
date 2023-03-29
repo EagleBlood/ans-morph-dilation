@@ -7,7 +7,7 @@ import masks as msk
 
 #Global variables
 program_dir = os.path.dirname(os.path.abspath(__file__))
-
+global img
 margin_size = 70
 background_color = (255, 255, 255)
 font = cv2.FONT_HERSHEY_SIMPLEX
@@ -129,11 +129,7 @@ def setPhotoOnCanvas(canvas, img, x, y, photo_list):
     img_return = canvas.create_image(x, y, image=photo_list[-1], anchor='nw')
     return img_return
 
-def update_photo_on_canvas(canvas, img_id, img_to_update):
-    img_pil = Image.fromarray(img_to_update)
-    img_tk = ImageTk.PhotoImage(img_pil)
-    canvas.itemconfig(img_id, image=img_tk)
-    return img_tk
+
 
 def on_slider_move(value):
     print(f"Slider value: {value}")
@@ -141,15 +137,17 @@ def on_slider_move(value):
 
 def update_main_image(canvas, input_img_var, selected_file_path):
     global image_ref # To prevent garbage collection
+    global img
 
     update_image = load_img(selected_file_path)
     update_image = cv2.resize(update_image, (228, 164))
+    img = update_image
     update_image = Image.fromarray(update_image)
     update_image = ImageTk.PhotoImage(update_image)
 
     canvas.itemconfig(input_img_var, image=update_image)
     image_ref = update_image
-
+    
     return update_image
 
 def update_mask_image(*args):
@@ -184,6 +182,7 @@ def open_file_dialog():
     selected_file_path = file_path
 
     if file_path:
+        
         update_main_image(canvas, input_img_var, selected_file_path)
 
 def save_file():
@@ -204,7 +203,8 @@ def thic_iter(fun, iter, img):
     return imgTab
 
 def execute_dilation():
-    dilation_iter, step_iter_1, step_iter_2, step_iter_3, step_iter_4 = thic_iter(thick, slider.get(), input_img_var)
+    #update_main_image(canvas, input_img_var, selected_file_path,img)
+    dilation_iter, step_iter_1, step_iter_2, step_iter_3, step_iter_4 = thic_iter(thick, slider.get(), img)
     setPhotoOnCanvas(canvas, dilation_iter, 0, 0, photo_list)
 
 
