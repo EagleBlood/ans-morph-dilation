@@ -22,7 +22,10 @@ mask_filenames = {
 }
 dictionary = {
     "Input Image": "Obraz wejściowy",
-    "Step ": "Krok ",
+    "Step 1": "Krok 1",
+    "Step 2": "Krok 2",
+    "Step 3": "Krok 3",
+    "Step 4": "Krok 4",
     "Result Image": "Obraz Wynikowy",
     "Update Image": "Aktualizuj obraz",
     "Load Image": "Wczytaj obraz",
@@ -36,9 +39,12 @@ mask_names = list(mask_filenames.keys())
 image_ref = None
 mask_ref = None
 img_res_ref = None
-img_step_ref = None
+img_step1_ref = None
+img_step2_ref = None
+img_step3_ref = None
+img_step4_ref = None
 lang = "en"
-text_1, text_2, text_3 = None , None, None
+text_1, text_2, text_3, text_4, text_5, text_6 = None, None, None, None, None, None
 
 
 
@@ -147,37 +153,56 @@ def update_main_image(canvas, input_img_var, selected_file_path):
     
     return update_image
 
-def update_step_image(canvas, step_img_var, images):
-    global img_step_ref # To prevent garbage collection
-
-    for i in range(4):
-        row = i // 2
-        col = i % 2
-
-        table_x = table_start_x + col * (table_size[0] + table_margin_size) 
-        table_y = table_start_y + row * (table_size[1] + table_margin_size)
-
-        img = images[i]
-        
-        img_pil = Image.fromarray(img)
-        img_resized = img_pil.resize(int(table_size))
-        img_tk = ImageTk.PhotoImage(img_resized)
-
-        canvas.itemconfig(step_img_var, image=img_tk)
-        img_step_ref = img_tk
-
-    return step_img_var
-
-def update_result_image(canvas, img_result_var, img):
+def update_result_images(canvas, img_result_var, img):
     global img_res_ref # To prevent garbage collection
 
+    resized_img = cv2.resize(img, (228, 164))
     img_pil = Image.fromarray(img)
     img_tk = ImageTk.PhotoImage(img_pil)
     
     canvas.itemconfig(img_result_var, image=img_tk)
     img_res_ref = img_tk
+
+def update_step1_image(canvas, img_result_var, img):
+    global img_step1_ref # To prevent garbage collection
+
+    resized_img = cv2.resize(img, (table_size[0], table_size[1]))
+    img_pil = Image.fromarray(resized_img)
+    img_tk = ImageTk.PhotoImage(img_pil)
     
-    return img_result_var
+    canvas.itemconfig(img_result_var, image=img_tk)
+    img_step1_ref = img_tk
+    
+
+def update_step2_image(canvas, img_result_var, img):
+    global img_step2_ref # To prevent garbage collection
+
+    resized_img = cv2.resize(img, (table_size[0], table_size[1]))
+    img_pil = Image.fromarray(resized_img)
+    img_tk = ImageTk.PhotoImage(img_pil)
+    
+    canvas.itemconfig(img_result_var, image=img_tk)
+    img_step2_ref = img_tk
+
+def update_step3_image(canvas, img_result_var, img):
+    global img_step3_ref # To prevent garbage collection
+
+    resized_img = cv2.resize(img, (table_size[0], table_size[1]))
+    img_pil = Image.fromarray(resized_img)
+    img_tk = ImageTk.PhotoImage(img_pil)
+    
+    canvas.itemconfig(img_result_var, image=img_tk)
+    img_step3_ref = img_tk
+
+def update_step4_image(canvas, img_result_var, img):
+    global img_step4_ref # To prevent garbage collection
+
+    resized_img = cv2.resize(img, (table_size[0], table_size[1]))
+    img_pil = Image.fromarray(resized_img)
+    img_tk = ImageTk.PhotoImage(img_pil)
+    
+    canvas.itemconfig(img_result_var, image=img_tk)
+    img_step4_ref = img_tk
 
 def on_slider_move(value):
     print(f"Slider value: {value}")
@@ -238,8 +263,11 @@ def thic_iter(fun, iter, img):
 
 def execute_dilation():
     dilation_iter, step_iter_1, step_iter_2, step_iter_3, step_iter_4 = thic_iter(thick, slider.get(), img)
-    update_result_image(canvas, img_result_var, dilation_iter)
-    update_step_image(canvas, step_img_var, [step_iter_1, step_iter_2, step_iter_3, step_iter_4])
+    update_step1_image(canvas, step1_img_var, step_iter_1)
+    update_step2_image(canvas, step2_img_var, step_iter_2)
+    update_step3_image(canvas, step3_img_var, step_iter_3)
+    update_step4_image(canvas, step4_img_var, step_iter_4)
+    update_result_images(canvas, img_result_var, dilation_iter)
 
 
 
@@ -275,23 +303,15 @@ def update_button_text(button, button_text):
         button.config(text=button_text)
 
 def update_text():
-    global text_1, text_2, text_3
-    
-    canvas.delete(text_1, text_3)
+    global text_1, text_2, text_3, text_4, text_5, text_6
+
+    canvas.delete(text_1, text_2, text_3, text_4, text_5, text_6)
     text_1 = canvas.create_text(margin_size+img.shape[1]/2, margin_size-40, text=translate_text("Input Image", lang), font=font)
-
-
-    canvas.delete(text_2)
-
-    for i in range(4):
-        row = i // 2
-        col = i % 2
-        table_x = table_start_x + col * (table_size[0] + table_margin_size) 
-        table_y = table_start_y + row * (table_size[1] + table_margin_size)
-        text_2 = canvas.create_text(table_x + table_size[0]/2, table_y-10, text=translate_text(f'Step {i+1}', lang), font=font)
-    
-
-    text_3 = canvas.create_text(margin_size*2 + table_size[0]*2 +  img.shape[1]/2, margin_size*2+img.shape[0]-10, text=translate_text("Result Image", lang), font=font)
+    text_2 = canvas.create_text(step1_pos[0] + table_size[0]/2, step1_pos[1]-10, text=translate_text("Step 1", lang), font=font)
+    text_3 = canvas.create_text(step2_pos[0] + table_size[0]/2, step2_pos[1]-10, text=translate_text("Step 2", lang), font=font)
+    text_4 = canvas.create_text(step3_pos[0] + table_size[0]/2, step3_pos[1]-10, text=translate_text("Step 3", lang), font=font)
+    text_5 = canvas.create_text(step4_pos[0] + table_size[0]/2, step4_pos[1]-10, text=translate_text("Step 4", lang), font=font)
+    text_6 = canvas.create_text(margin_size*2 + table_size[0]*2 +  img.shape[1]/2, margin_size*2+img.shape[0]-10, text=translate_text("Result Image", lang), font=font)
 
 
 
@@ -321,23 +341,24 @@ selected_mask_var.trace("w", update_mask_image)
 # Add the images on cavas
 input_img_var = setPhotoOnCanvas(canvas, img, margin_size, margin_size-20, photo_list)
 
-# Create a table to display the morphological dilation steps
-table_size = (img.shape[1]//1.3, img.shape[0]//1.3)
-table_margin_size = 20
+# Set position valaues
+table_size = (int(img.shape[1]//1.3), int(img.shape[0]//1.3))
+table_margin_size = 1
 table_start_x = margin_size
 table_start_y = margin_size*3+40
-for i in range(4):
-    row = i // 2
-    col = i % 2
-    step_img = [step1, step2, step3, step4][i]
-    table_x = table_start_x + col * (table_size[0] + table_margin_size) 
-    table_y = table_start_y + row * (table_size[1] + table_margin_size)
-    # canvas.create_text(table_x + table_size[0]/2, table_y-10, text=f'Step {i+1}', font=font)
-    step_img_var = setPhotoOnCanvas(canvas, cv2.resize(step_img, (int(table_size[0]), int(table_size[1]))), table_x, table_y, photo_list)
 
+# Define positions of each step image
+step1_pos = (margin_size, margin_size*3+40)
+step2_pos = (margin_size+table_size[0] - table_margin_size + 40, margin_size*3+40)
+step3_pos = (margin_size, margin_size*3+60+table_size[1] - table_margin_size)
+step4_pos = (margin_size+table_size[0] - table_margin_size + 40, margin_size*3+60+table_size[1] - table_margin_size)
 
-# Add result image next to the table
-# canvas.create_text(margin_size*2 + table_size[0]*2 +  img.shape[1]/2, margin_size*2+img.shape[0]-10, text='Result', font=font)
+# Add the images on cavas
+step1_img_var = setPhotoOnCanvas(canvas, cv2.resize(step1, (table_size[0], table_size[1])), step1_pos[0], step1_pos[1], photo_list)
+step2_img_var = setPhotoOnCanvas(canvas, cv2.resize(step2, (table_size[0], table_size[1])), step2_pos[0], step2_pos[1], photo_list)
+step3_img_var = setPhotoOnCanvas(canvas, cv2.resize(step3, (table_size[0], table_size[1])), step3_pos[0], step3_pos[1], photo_list)
+step4_img_var = setPhotoOnCanvas(canvas, cv2.resize(step4, (table_size[0], table_size[1])), step4_pos[0], step4_pos[1], photo_list)
+
 img_result_var = setPhotoOnCanvas(canvas, dilation, margin_size*2 + table_size[0]*2, margin_size*2+img.shape[0], photo_list)
 
 
