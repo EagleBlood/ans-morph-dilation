@@ -2,31 +2,31 @@ clear all;
 close all;
 
 er = imread('ertka.bmp');
-% tab1 = [1,1,1
-%        0,0,0
-%        0 0 0];
-% tab2 = [0 0 1
-%         0 0 1
-%         0 0 1];
-% tab3 = [0 0 0
-%         0 0 0
-%         1 1 1];
-% tab4 = [1 0 0
-%         1 0 0
-%         1 0 0];
-
-tab1 = [0,1,0
+tab1 = [1,1,1
        0,0,0
        0 0 0];
-tab2 = [0 0 0
+tab2 = [0 0 1
         0 0 1
-        0 0 0];
+        0 0 1];
 tab3 = [0 0 0
         0 0 0
-        0 1 0];
-tab4 = [0 0 0
+        1 1 1];
+tab4 = [1 0 0
         1 0 0
-        0 0 0];
+        1 0 0];
+
+% tab1 = [0,1,0
+%        0,0,0
+%        0 0 0];
+% tab2 = [0 0 0
+%         0 0 1
+%         0 0 0];
+% tab3 = [0 0 0
+%         0 0 0
+%         0 1 0];
+% tab4 = [0 0 0
+%         1 0 0
+%         0 0 0];
 
 
 
@@ -66,47 +66,47 @@ for y = 1:size(er_,1)-2
         masked4 = masked4.*tab4;
         
 
-%         if(masked1(1,1)==masked1(1,2) && masked1(1,3)==masked1(1,2))
-%             er1(y,x+1) = 255;
+        if(masked1(1,1)==masked1(1,2) && masked1(1,3)==masked1(1,2))
+            er1(y,x+1) = 255;
+        end
+        if(masked2(1,3)==masked2(2,3) && masked2(3,3)==masked2(2,3))
+            er2(y+1,x+2) = 255;
+        end
+        if(masked3(3,3)==masked3(3,2) && masked3(3,1)==masked3(3,2))
+            er3(y+2,x+1) = 255;
+        end
+        if(masked4(1,1)==masked4(2,1) && masked4(3,1)==masked4(2,1))
+            er4(y+1,x) = 255;
+        end
+
+
+%         if(masked1(1,1)==masked1(1,2))
+%             er1(y,x) = 255;
 %         end
-%         if(masked2(1,3)==masked2(2,3) && masked2(3,3)==masked2(2,3))
-%             er2(y+1,x+2) = 255;
+%         if(masked1(1,3)==masked1(1,2))
+%             er1(y,x+2) = 255;
 %         end
-%         if(masked3(3,3)==masked3(2,3) && masked3(3,1)==masked3(3,1))
-%             er3(y+2,x+1) = 255;
+% 
+%         if(masked2(1,3)==masked2(2,3))
+%             er2(y,x+2) = 255;
 %         end
-%         if(masked4(1,1)==masked4(2,1) && masked4(3,1)==masked4(2,1))
-%             er4(y+1,x) = 255;
+%         if(masked2(3,3)==masked2(2,3))
+%             er2(y+2,x+2) = 255;
 %         end
-
-
-        if(masked1(1,1)==masked1(1,2))
-            er1(y,x) = 255;
-        end
-        if(masked1(1,3)==masked1(1,2))
-            er1(y,x+2) = 255;
-        end
-
-        if(masked2(1,3)==masked2(2,3))
-            er2(y,x+2) = 255;
-        end
-        if(masked2(3,3)==masked2(2,3))
-            er2(y+2,x+2) = 255;
-        end
-
-        if(masked3(3,1)==masked3(3,2))
-            er3(y+2,x) = 255;
-        end
-        if(masked3(3,3)==masked3(3,2))
-            er3(y+2,x+2) = 255;
-        end
-
-        if(masked4(1,1)==masked4(2,1))
-            er4(y,x) = 255;
-        end
-        if(masked4(1,3)==masked4(2,1))
-            er4(y+2,x) = 255;
-        end
+% 
+%         if(masked3(3,1)==masked3(3,2))
+%             er3(y+2,x) = 255;
+%         end
+%         if(masked3(3,3)==masked3(3,2))
+%             er3(y+2,x+2) = 255;
+%         end
+% 
+%         if(masked4(1,1)==masked4(2,1))
+%             er4(y,x) = 255;
+%         end
+%         if(masked4(1,3)==masked4(2,1))
+%             er4(y+2,x) = 255;
+%         end
     end
 end
 

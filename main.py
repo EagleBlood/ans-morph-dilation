@@ -49,7 +49,7 @@ text_1, text_2, text_3, text_4, text_5, text_6 = None, None, None, None, None, N
 
 
 #Mask functions
-def thick(img):
+def defaultThickening(img):
     imgA = np.array(img)
     
     img1 = np.array(imgA,np.uint8)
@@ -80,25 +80,38 @@ def thick(img):
             masked2 *= mask
             mask = np.rot90(mask)
 
-            if(masked1[0,0]==masked1[0,1]):
-                img1[y,x] = 255
-            if(masked1[0,0]==masked1[0,1]):
-                img1[y,x+2] = 255
+            if(masked1[0,0]==masked1[0,1] and masked1[0,2] == masked1[0,1]):
+                img1[y,x+1] = 255
+            if(masked2[0,2]==masked2[1,2] and masked2[2,2] == masked2[1,2]):
+                img2[y+1,x+2] = 255
+            if(masked3[2,2]==masked3[2,1] and masked3[2,0] == masked3[2,1]):
+                img3[y+2,x+1] = 255
+            if(masked4[0,0]==masked4[1,0] and masked4[2,0] == masked4[1,0]):
+                img4[y+1,x] = 255
 
-            if(masked2[0,2]==masked2[1,2]):
-                img2[y,x+2] = 255
-            if(masked2[2,2]==masked2[1,2]):
-                img2[y+2,x+2] = 255
 
-            if(masked3[2,2]==masked3[2,1]):
-                img3[y+2,x+2] = 255
-            if(masked3[2,0]==masked3[2,1]):
-                img3[y+2,x] = 255
 
-            if(masked4[0,0]==masked4[1,0]):
-                img4[y,x] = 255
-            if(masked4[2,0]==masked4[1,0]):
-                img4[y+2,x] = 255
+
+
+            #if(masked1[0,0]==masked1[0,1]):
+            #    img1[y,x] = 255
+            #if(masked1[0,0]==masked1[0,1]):
+            #    img1[y,x+2] = 255
+
+            #if(masked2[0,2]==masked2[1,2]):
+            #    img2[y,x+2] = 255
+            #if(masked2[2,2]==masked2[1,2]):
+            #    img2[y+2,x+2] = 255
+
+            #if(masked3[2,2]==masked3[2,1]):
+            #    img3[y+2,x+2] = 255
+            #if(masked3[2,0]==masked3[2,1]):
+            #    img3[y+2,x] = 255
+
+            #if(masked4[0,0]==masked4[1,0]):
+            #    img4[y,x] = 255
+            #if(masked4[2,0]==masked4[1,0]):
+            #    img4[y+2,x] = 255
     
     for y in range(0,img.shape[0]):
         for x in range(0,img.shape[1]):
@@ -262,7 +275,7 @@ def thic_iter(fun, iter, img):
     return imgTab
 
 def execute_dilation():
-    dilation_iter, step_iter_1, step_iter_2, step_iter_3, step_iter_4 = thic_iter(thick, slider.get(), img)
+    dilation_iter, step_iter_1, step_iter_2, step_iter_3, step_iter_4 = thic_iter(defaultThickening, slider.get(), img)
     update_step1_image(canvas, step1_img_var, step_iter_1)
     update_step2_image(canvas, step2_img_var, step_iter_2)
     update_step3_image(canvas, step3_img_var, step_iter_3)
@@ -322,7 +335,7 @@ img = cv2.resize(img, (228, 164))
 
 
 # Apply the morphological dilation
-dilation, step1, step2, step3, step4 = thick(img)
+dilation, step1, step2, step3, step4 = defaultThickening(img)
 
 
 # Create a window and canvas to display the images
