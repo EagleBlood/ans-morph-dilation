@@ -43,6 +43,7 @@ img_step1_ref = None
 img_step2_ref = None
 img_step3_ref = None
 img_step4_ref = None
+dilation_iter = None
 lang = "en"
 text_1, text_2, text_3, text_4, text_5, text_6 = None, None, None, None, None, None
 
@@ -235,7 +236,10 @@ def open_file_dialog():
 def save_file():
     file_path = filedialog.asksaveasfilename(initialdir=os.getcwd(), defaultextension=".jpg", filetypes=[(".jpg", "*.jpg"), ("All Files", "*.*")])
     if file_path:
-        cv2.imwrite(file_path, dilation)
+        if dilation_iter is not None:
+            cv2.imwrite(file_path, dilation_iter)            
+        else:
+            cv2.imwrite(file_path, dilation)
 
 def load_img(path):
     img = cv2.imread(path, 0)
@@ -251,6 +255,7 @@ def thic_iter(fun, iter, img):
     return imgTab
 
 def execute_dilation():
+    global dilation_iter
     dilation_iter, step_iter_1, step_iter_2, step_iter_3, step_iter_4 = thic_iter(defaultThickening, slider.get(), img)
     update_step1_image(canvas, step1_img_var, step_iter_1)
     update_step2_image(canvas, step2_img_var, step_iter_2)
