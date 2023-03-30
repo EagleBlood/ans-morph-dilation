@@ -88,30 +88,6 @@ def defaultThickening(img):
                 img3[y+2,x+1] = 255
             if(masked4[0,0]==masked4[1,0] and masked4[2,0] == masked4[1,0]):
                 img4[y+1,x] = 255
-
-
-
-
-
-            #if(masked1[0,0]==masked1[0,1]):
-            #    img1[y,x] = 255
-            #if(masked1[0,0]==masked1[0,1]):
-            #    img1[y,x+2] = 255
-
-            #if(masked2[0,2]==masked2[1,2]):
-            #    img2[y,x+2] = 255
-            #if(masked2[2,2]==masked2[1,2]):
-            #    img2[y+2,x+2] = 255
-
-            #if(masked3[2,2]==masked3[2,1]):
-            #    img3[y+2,x+2] = 255
-            #if(masked3[2,0]==masked3[2,1]):
-            #    img3[y+2,x] = 255
-
-            #if(masked4[0,0]==masked4[1,0]):
-            #    img4[y,x] = 255
-            #if(masked4[2,0]==masked4[1,0]):
-            #    img4[y+2,x] = 255
     
     for y in range(0,img.shape[0]):
         for x in range(0,img.shape[1]):
