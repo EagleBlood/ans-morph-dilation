@@ -57,62 +57,40 @@ def defaultThickening(img):
     img3 = np.array(imgA,np.uint8)
     img4 = np.array(imgA,np.uint8)
 
-    masked1 = np.zeros((3,3), np.uint8)
-    masked2 = np.zeros((3,3), np.uint8)
-    masked3 = np.zeros((3,3), np.uint8)
-    masked4 = np.zeros((3,3), np.uint8)
+    imgs = [img1,img2,img3,img4]
+
+
+    masked = np.zeros((3,3), np.uint8)
+    
 
     mask = msk.defaultMask()
-    
-    for y in range(0,img.shape[0]-2):
-        for x in range(0,img.shape[1]-2):
-            masked1 = np.array(imgA[y:y+3,x:x+3])
-            masked2 = np.array(masked1)
-            masked3 = np.array(masked1)
-            masked4 = np.array(masked1)
+     
+    for se in range(len(mask)):
+        for y in range(0,img.shape[0]-2):
+            for x in range(0,img.shape[1]-2):
+                masked = np.array(imgA[y:y+3,x:x+3])           
+                if(np.any(mask[se] & masked)):
+                    imgs[se][y+1,x+1] = 1
+            
 
-            masked1 *= mask
-            mask = np.rot90(mask)
-            masked4 *= mask
-            mask = np.rot90(mask)
-            masked3 *= mask
-            mask = np.rot90(mask)
-            masked2 *= mask
-            mask = np.rot90(mask)
-
-            if(masked1[0,0]==masked1[0,1] and masked1[0,2] == masked1[0,1]):
-                img1[y,x+1] = 255
-            if(masked2[0,2]==masked2[1,2] and masked2[2,2] == masked2[1,2]):
-                img2[y+1,x+2] = 255
-            if(masked3[2,2]==masked3[2,1] and masked3[2,0] == masked3[2,1]):
-                img3[y+2,x+1] = 255
-            if(masked4[0,0]==masked4[1,0] and masked4[2,0] == masked4[1,0]):
-                img4[y+1,x] = 255
+    for y in range(0,img.shape[0]):
+        for x in range(0,img.shape[1]):
+            if(img1[y,x]!=0):
+                img1[y,x]=255
+            if(img2[y,x]!=0):
+                img2[y,x]=255
+            if(img3[y,x]!=0):
+                img3[y,x]=255
+            if(img4[y,x]!=0):
+                img4[y,x]=255
+    tmp = img1 + img2 + img3 + img4 + imgA
     
     for y in range(0,img.shape[0]):
         for x in range(0,img.shape[1]):
-            if (img1[y,x]==0):
-                img1[y,x] = 255
-            else:
-                img1[y,x]  = 0
-            if img2[y,x] == 0:
-                img2[y,x] = 255
-            else:
-                img2[y,x] = 0
-            if img3[y,x] == 0:
-                img3[y,x] = 255
-            else:
-                img3[y,x]  = 0
-            if img4[y,x] == 0:
-                img4[y,x] = 255
-            else:
-                img4[y,x]  = 0
-
-    imgA += img1 + img2 + img3 + img4
-
+            if(tmp[y,x]!=0):
+                tmp[y,x]=255
+            imgA[y,x] = tmp[y,x]
     return imgA, img1, img2, img3, img4
-
-
 
 
 
