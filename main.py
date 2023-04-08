@@ -219,8 +219,6 @@ def load_img(path):
     img = cv2.imread(path, 0)
     return img
 
-
-
 # Morphological functions
 def thic_iter(fun, iter, img):
     imgTab = fun(img)
@@ -229,12 +227,13 @@ def thic_iter(fun, iter, img):
     return imgTab
 
 def execute_dilation():
-    dilation_iter, step_iter_1, step_iter_2, step_iter_3, step_iter_4 = thic_iter(defaultThickening, slider.get(), img)
+    global dilation
+    dilation, step_iter_1, step_iter_2, step_iter_3, step_iter_4 = thic_iter(defaultThickening, slider.get(), img)
     update_step1_image(canvas, step1_img_var, step_iter_1)
     update_step2_image(canvas, step2_img_var, step_iter_2)
     update_step3_image(canvas, step3_img_var, step_iter_3)
     update_step4_image(canvas, step4_img_var, step_iter_4)
-    update_result_images(canvas, img_result_var, dilation_iter)
+    update_result_images(canvas, img_result_var, dilation)
 
 
 
