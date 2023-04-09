@@ -16,10 +16,14 @@ selected_file_path = ""
 
 mask_filenames = {
     "Default Mask": "mask/Default.png",
-    "Golay Mask C ": "mask/maskC.png",
-    "Golay Mask E": "mask/maskE.png",
+    "Golay Mask C": "mask/maskC.png",    
     "Golay Mask D": "mask/maskD.png",
+    "Golay Mask E": "mask/maskE.png",
+    "Golay Mask L": "mask/Default.png",
+    "Golay Mask M": "mask/Default.png",
+    "Golay Mask R": "mask/Default.png",
 }
+
 dictionary = {
     "Input Image": "Obraz wejściowy",
     "Step 1": "Krok 1",
@@ -45,11 +49,14 @@ img_step3_ref = None
 img_step4_ref = None
 lang = "en"
 text_1, text_2, text_3, text_4, text_5, text_6 = None, None, None, None, None, None
-
+selected_mask = msk.defaultMask()
 
 
 #Mask functions
 def defaultThickening(img):
+    
+    global selected_mask
+    
     imgA = np.array(img)
     
     img1 = np.array(imgA,np.uint8)
@@ -59,12 +66,10 @@ def defaultThickening(img):
 
     imgs = [img1,img2,img3,img4]
 
-
     masked = np.zeros((3,3), np.uint8)
-    
 
-    mask = msk.defaultMask()
-     
+    mask = selected_mask
+    
     for se in range(len(mask)):
         for y in range(0,img.shape[0]-2):
             for x in range(0,img.shape[1]-2):
@@ -91,8 +96,6 @@ def defaultThickening(img):
                 tmp[y,x]=255
             imgA[y,x] = tmp[y,x]
     return imgA, img1, img2, img3, img4
-
-
 
 
 # GUI functions
@@ -280,7 +283,24 @@ def update_text():
     text_6 = canvas.create_text(margin_size*2 + table_size[0]*2 +  img.shape[1]/2, margin_size*2+img.shape[0]-10, text=translate_text("Result Image", lang), font=font)
 
 
+def on_select(*args):
 
+    global selected_mask
+
+    if selected_mask_var.get() == "Default Mask":
+        selected_mask = msk.defaultMask()
+    elif selected_mask_var.get() == "Golay Mask C":
+        selected_mask = msk.golayC()
+    elif selected_mask_var.get() == "Golay Mask D":
+        selected_mask = msk.golayD()
+    elif selected_mask_var.get() == "Golay Mask E":
+        selected_mask = msk.golayE()
+    elif selected_mask_var.get() == "Golay Mask L":
+        selected_mask = msk.golayL()
+    elif selected_mask_var.get() == "Golay Mask M":
+        selected_mask = msk.golayM()
+    elif selected_mask_var.get() == "Golay Mask R":
+        selected_mask = msk.golayR()
 
 # Load the input image
 img = cv2.imread(r'ertka.bmp', 0)
@@ -331,7 +351,7 @@ img_result_var = setPhotoOnCanvas(canvas, dilation, margin_size*2 + table_size[0
 #Buttons
 update_button = Button(root, text='Update Image', command=execute_dilation)
 load_button = Button(root, text='Load Image', command=open_file_dialog)
-mask_dropdown = OptionMenu(root, selected_mask_var, *mask_names)
+mask_dropdown = OptionMenu(root, selected_mask_var, *mask_names, command=on_select)
 save_button = Button(root, text='Save Image', command=save_file)
 change_lang_button = Button(root, text='Change language', command=change_language)
 slider, slider_frame = create_slider(root)
