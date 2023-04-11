@@ -19,9 +19,9 @@ mask_filenames = {
     "Golay Mask C": "mask/maskC.png",    
     "Golay Mask D": "mask/maskD.png",
     "Golay Mask E": "mask/maskE.png",
-    "Golay Mask L": "mask/Default.png",
-    "Golay Mask M": "mask/Default.png",
-    "Golay Mask R": "mask/Default.png",
+    "Golay Mask L": "mask/maskL.png",
+    "Golay Mask M": "mask/maskM.png",
+    "Golay Mask R": "mask/maskR.png",
 }
 
 dictionary = {
