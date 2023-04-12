@@ -88,6 +88,10 @@ def defaultThickening(img):
                 img3[y,x]=255
             if(img4[y,x]!=0):
                 img4[y,x]=255
+    img1 -= imgA
+    img2 -= imgA
+    img3 -= imgA
+    img4 -= imgA
     tmp = img1 + img2 + img3 + img4 + imgA
     
     for y in range(0,img.shape[0]):
