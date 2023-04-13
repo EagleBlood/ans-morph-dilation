@@ -34,7 +34,7 @@ dictionary = {
     "Update Image": "Aktualizuj obraz",
     "Load Image": "Wczytaj obraz",
     "Save Image": "Zapisz obraz",
-    "Change language": "Zmień język",
+    "PL": "EN",
 }
 
 mask_names = list(mask_filenames.keys())
@@ -266,7 +266,7 @@ def change_language():
     update_button_text(update_button, "Update Image")
     update_button_text(load_button, "Load Image")
     update_button_text(save_button, "Save Image")
-    update_button_text(change_lang_button, "Change language")
+    update_button_text(change_lang_button, "PL")
 
 def update_button_text(button, button_text):
     if button_text in dictionary:
@@ -357,7 +357,7 @@ update_button = Button(root, text='Update Image', command=execute_dilation)
 load_button = Button(root, text='Load Image', command=open_file_dialog)
 mask_dropdown = OptionMenu(root, selected_mask_var, *mask_names, command=on_select)
 save_button = Button(root, text='Save Image', command=save_file)
-change_lang_button = Button(root, text='Change language', command=change_language)
+change_lang_button = Button(root, text='PL', command=change_language)
 slider, slider_frame = create_slider(root)
 
 
