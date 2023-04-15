@@ -14,6 +14,10 @@ font = cv2.FONT_HERSHEY_SIMPLEX
 photo_list = []
 selected_file_path = ""
 
+#Image processing variables
+threshold_value = 127
+max_value = 255
+
 mask_filenames = {
     "Default Mask": "mask/Default.png",
     "Golay Mask C": "mask/maskC.png",    
@@ -80,13 +84,13 @@ def defaultThickening(img):
 
     for y in range(0,img.shape[0]):
         for x in range(0,img.shape[1]):
-            if(img1[y,x]!=0):
+            if np.any(img1[y,x]!=0):
                 img1[y,x]=255
-            if(img2[y,x]!=0):
+            if np.any(img1[y,x]!=0):
                 img2[y,x]=255
-            if(img3[y,x]!=0):
+            if np.any(img1[y,x]!=0):
                 img3[y,x]=255
-            if(img4[y,x]!=0):
+            if np.any(img1[y,x]!=0):
                 img4[y,x]=255
     img1 -= imgA
     img2 -= imgA
@@ -96,7 +100,7 @@ def defaultThickening(img):
     
     for y in range(0,img.shape[0]):
         for x in range(0,img.shape[1]):
-            if(tmp[y,x]!=0):
+            if(tmp[y,x].any()):
                 tmp[y,x]=255
             imgA[y,x] = tmp[y,x]
     return imgA, img1, img2, img3, img4
@@ -111,6 +115,14 @@ def setPhotoOnCanvas(canvas, img, x, y, photo_list):
     img_return = canvas.create_image(x, y, image=photo_list[-1], anchor='nw')
     return img_return
 
+def replace_image_with_color(image_path):
+    img = Image.open(image_path)
+    width, height = img.size
+    data = img.load()
+    for x in range(width):
+        for y in range(height):
+            data[x, y] = (240, 240, 240)  # replace the pixel with F0F0F0 color
+    img.save(image_path)
 
 def update_main_image(canvas, input_img_var, selected_file_path):
     global image_ref # To prevent garbage collection
@@ -136,6 +148,7 @@ def update_result_images(canvas, img_result_var, img):
     
     canvas.itemconfig(img_result_var, image=img_tk)
     img_res_ref = img_tk
+    canvas.itemconfigure(img_result_var, state="normal")
 
 def update_step1_image(canvas, img_result_var, img):
     global img_step1_ref # To prevent garbage collection
@@ -146,7 +159,7 @@ def update_step1_image(canvas, img_result_var, img):
     
     canvas.itemconfig(img_result_var, image=img_tk)
     img_step1_ref = img_tk
-    
+    canvas.itemconfigure(img_result_var, state="normal")
 
 def update_step2_image(canvas, img_result_var, img):
     global img_step2_ref # To prevent garbage collection
@@ -157,6 +170,7 @@ def update_step2_image(canvas, img_result_var, img):
     
     canvas.itemconfig(img_result_var, image=img_tk)
     img_step2_ref = img_tk
+    canvas.itemconfigure(img_result_var, state="normal")
 
 def update_step3_image(canvas, img_result_var, img):
     global img_step3_ref # To prevent garbage collection
@@ -167,6 +181,7 @@ def update_step3_image(canvas, img_result_var, img):
     
     canvas.itemconfig(img_result_var, image=img_tk)
     img_step3_ref = img_tk
+    canvas.itemconfigure(img_result_var, state="normal")
 
 def update_step4_image(canvas, img_result_var, img):
     global img_step4_ref # To prevent garbage collection
@@ -177,6 +192,7 @@ def update_step4_image(canvas, img_result_var, img):
     
     canvas.itemconfig(img_result_var, image=img_tk)
     img_step4_ref = img_tk
+    canvas.itemconfigure(img_result_var, state="normal")
 
 def on_slider_move(value):
     print(f"Slider value: {value}")
@@ -206,7 +222,7 @@ def create_slider(parent):
 # File functions
 def open_file_dialog():
     file_path = filedialog.askopenfilename(
-        initialdir=os.getcwd(),
+        initialdir=os.path.join(os.getcwd(), "img"),
         title="Select a file",
         filetypes=(("Image files", "*.bmp;*.jpg;*.png"), ("All files", "*.*")),
     )
@@ -214,7 +230,6 @@ def open_file_dialog():
     selected_file_path = file_path
 
     if file_path:
-        
         update_main_image(canvas, input_img_var, selected_file_path)
 
 def save_file():
@@ -223,7 +238,16 @@ def save_file():
         cv2.imwrite(file_path, dilation)
 
 def load_img(path):
-    img = cv2.imread(path, 0)
+    binary_img = cv2.imread(path, cv2.IMREAD_GRAYSCALE)
+    ret, binary_img = cv2.threshold(binary_img, threshold_value, max_value, cv2.THRESH_BINARY)
+
+    img = cv2.cvtColor(binary_img, cv2.COLOR_GRAY2BGR)
+
+    canvas.itemconfigure(step1_img_var, state="hidden")
+    canvas.itemconfigure(step2_img_var, state="hidden")
+    canvas.itemconfigure(step3_img_var, state="hidden")
+    canvas.itemconfigure(step4_img_var, state="hidden")
+    canvas.itemconfigure(img_result_var, state="hidden")
     return img
 
 # Morphological functions
@@ -307,9 +331,15 @@ def on_select(*args):
         selected_mask = msk.golayR()
 
 # Load the input image
-img = cv2.imread(r'ertka.bmp', 0)
-img = cv2.resize(img, (228, 164))
+# img = cv2.imread(r'img/ertka.bmp', 0)
 
+
+# Load the binary image
+binary_img = cv2.imread(r'img/kot.png', cv2.IMREAD_GRAYSCALE)
+ret, binary_img = cv2.threshold(binary_img, threshold_value, max_value, cv2.THRESH_BINARY)
+
+img = cv2.cvtColor(binary_img, cv2.COLOR_GRAY2BGR)
+img = cv2.resize(img, (228, 164))
 
 # Apply the morphological dilation
 dilation, step1, step2, step3, step4 = defaultThickening(img)
@@ -350,6 +380,12 @@ step3_img_var = setPhotoOnCanvas(canvas, cv2.resize(step3, (table_size[0], table
 step4_img_var = setPhotoOnCanvas(canvas, cv2.resize(step4, (table_size[0], table_size[1])), step4_pos[0], step4_pos[1], photo_list)
 
 img_result_var = setPhotoOnCanvas(canvas, dilation, margin_size*2 + table_size[0]*2, margin_size*2+img.shape[0], photo_list)
+
+canvas.itemconfigure(step1_img_var, state="hidden")
+canvas.itemconfigure(step2_img_var, state="hidden")
+canvas.itemconfigure(step3_img_var, state="hidden")
+canvas.itemconfigure(step4_img_var, state="hidden")
+canvas.itemconfigure(img_result_var, state="hidden")
 
 
 #Buttons
