@@ -61,48 +61,41 @@ def defaultThickening(img):
     
     global selected_mask
     
-    imgA = np.array(img)
+    imgA = np.array(img,np.uint8)
     
-    img1 = np.array(imgA,np.uint8)
-    img2 = np.array(imgA,np.uint8)
-    img3 = np.array(imgA,np.uint8)
-    img4 = np.array(imgA,np.uint8)
-
-    imgs = [img1,img2,img3,img4]
+    imgDiff = np.array(imgA,np.uint8)
+    
 
     masked = np.zeros((3,3), np.uint8)
-
-    mask = selected_mask
+    changingCenter = 1
     
-    for se in range(len(mask)):
+    print(imgA.shape)
+    for currentMask in selected_mask:
         for y in range(0,img.shape[0]-2):
             for x in range(0,img.shape[1]-2):
-                masked = np.array(imgA[y:y+3,x:x+3])           
-                if(np.any(mask[se] & masked)):
-                    imgs[se][y+1,x+1] = 1
+                masked = imgA[y:y+3,x:x+3,0]           
+                for i in range(0,3):
+                    for j in range(0,3):
+                        if(currentMask[i][j] != 2):                          
+                            if (currentMask[i][j] != masked[i][j]):
+                               changingCenter = 0                           
+                if(changingCenter == 1 ):
+                    imgA[y+1][x+1][0] = 255
+                    imgA[y+1][x+1][1] = 255
+                    imgA[y+1][x+1][2] = 255
+                else:
+                    changingCenter = 1
+                
             
 
-    for y in range(0,img.shape[0]):
-        for x in range(0,img.shape[1]):
-            if np.any(img1[y,x]!=0):
-                img1[y,x]=255
-            if np.any(img1[y,x]!=0):
-                img2[y,x]=255
-            if np.any(img1[y,x]!=0):
-                img3[y,x]=255
-            if np.any(img1[y,x]!=0):
-                img4[y,x]=255
-    img1 -= imgA
-    img2 -= imgA
-    img3 -= imgA
-    img4 -= imgA
-    tmp = img1 + img2 + img3 + img4 + imgA
+    imgDiff = imgA - img
     
-    for y in range(0,img.shape[0]):
-        for x in range(0,img.shape[1]):
-            if(tmp[y,x].any()):
-                tmp[y,x]=255
-            imgA[y,x] = tmp[y,x]
+    #Do usunięcia po zmiania stepów na jeden obraz
+    img1 = np.array(imgDiff,np.uint8)
+    img2 = np.array(imgDiff,np.uint8)
+    img3 = np.array(imgDiff,np.uint8)
+    img4 = np.array(imgDiff,np.uint8)
+    
     return imgA, img1, img2, img3, img4
 
 
@@ -121,8 +114,9 @@ def replace_image_with_color(image_path):
     data = img.load()
     for x in range(width):
         for y in range(height):
-            data[x, y] = (240, 240, 240)  # replace the pixel with F0F0F0 color
+            data[x, y] = (255, 255, 255)  # replace the pixel with F0F0F0 color
     img.save(image_path)
+    
 
 def update_main_image(canvas, input_img_var, selected_file_path):
     global image_ref # To prevent garbage collection
@@ -335,7 +329,7 @@ def on_select(*args):
 
 
 # Load the binary image
-binary_img = cv2.imread(r'img/kot.png', cv2.IMREAD_GRAYSCALE)
+binary_img = cv2.imread(r'img/ertka.bmp', cv2.IMREAD_GRAYSCALE)
 ret, binary_img = cv2.threshold(binary_img, threshold_value, max_value, cv2.THRESH_BINARY)
 
 img = cv2.cvtColor(binary_img, cv2.COLOR_GRAY2BGR)
