@@ -4,12 +4,15 @@ def defaultMask():
     mask1 = np.array([[2, 255, 2],
                      [0, 0, 0],
                      [0, 0, 0]], dtype=np.uint8)
+    
     mask2 = np.array([[0, 0, 2],
                      [0, 0, 255],
                      [0, 0, 2]], dtype=np.uint8)
+    
     mask3 = np.array([[0, 0, 0],
                      [0, 0, 0],
                      [2, 255, 2]], dtype=np.uint8)
+    
     mask4 = np.array([[2, 0, 0],
                      [255, 0, 0],
                      [2, 0, 0]], dtype=np.uint8)
@@ -96,7 +99,7 @@ def skiz():
     
     return mask1.astype(np.uint8),mask2.astype(np.uint8),mask3.astype(np.uint8),mask4.astype(np.uint8)
 
-def convex():
+def canvas():
     mask1 = np.array([[255, 2, 2],
                      [255, 2, 255],
                      [255, 255, 2]], dtype=np.uint8)

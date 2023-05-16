@@ -57,46 +57,57 @@ selected_mask = msk.defaultMask()
 
 
 #Mask functions
-def defaultThickening(img):
+def defaultThickening(img,iter):
     
     global selected_mask
-    
+    for y in range(0,img.shape[0]-2):
+        for x in range(0,img.shape[1]-2):
+            if img[y][x] != 0:
+                img[y][x] = 255
+
+
+
     imgA = np.array(img,np.uint8)
-    
-    imgDiff = np.array(imgA,np.uint8)
+
     
 
-    masked = np.zeros((3,3), np.uint8)
-    changingCenter = 1
     
-    print(imgA.shape)
-    for currentMask in selected_mask:
-        for y in range(0,img.shape[0]-2):
-            for x in range(0,img.shape[1]-2):
-                masked = imgA[y:y+3,x:x+3,0]           
-                for i in range(0,3):
-                    for j in range(0,3):
-                        if(currentMask[i][j] != 2):                          
-                            if (currentMask[i][j] != masked[i][j]):
-                               changingCenter = 0                           
-                if(changingCenter == 1 ):
-                    imgA[y+1][x+1][0] = 255
-                    imgA[y+1][x+1][1] = 255
-                    imgA[y+1][x+1][2] = 255
-                else:
-                    changingCenter = 1
-                
+    if len(selected_mask) != 3:
+        imgTmp = np.array(imgA,np.uint8)
+        for a in range(iter):
+            for se in selected_mask:           
+                for y in range(0,img.shape[0]-2):
+                    for x in range(0,img.shape[1]-2):
+                        masked = imgA[y:y+3,x:x+3]
+                        changeImg = True
+                        for i in range(3):
+                            for j in range(3):
+                                if  (se[i][j] == 0 and masked[i][j] != 0) or (se[i][j] == 255 and  masked[i][j] == 0) :
+                                    changeImg = False
+                        if changeImg == True:
+                            imgTmp[y+1][x+1] = 255
+            imgA = imgTmp        
+    else:
+        se = selected_mask
+        for a in range(iter):
+            for y in range(0,img.shape[0]-2):
+                for x in range(0,img.shape[1]-2):
+                    masked = imgA[y:y+3,x:x+3]
+                    changeImg = True
+                    for i in range(3):
+                        for j in range(3):
+                            if  (se[i][j] == 0 and masked[i][j] != 0) or (se[i][j] == 255 and  masked[i][j] == 0) :
+                                changeImg = False
+                    if changeImg == True:
+                        imgTmp[y+1][x+1] = 255
+            imgA = imgTmp 
+            
+    
+    imgDiff = np.subtract(imgA, img)        
             
 
-    imgDiff = imgA - img
     
-    #Do usunięcia po zmiania stepów na jeden obraz
-    img1 = np.array(imgDiff,np.uint8)
-    img2 = np.array(imgDiff,np.uint8)
-    img3 = np.array(imgDiff,np.uint8)
-    img4 = np.array(imgDiff,np.uint8)
-    
-    return imgA, img1, img2, img3, img4
+    return imgA, imgDiff, imgDiff, imgDiff, imgDiff
 
 
 # GUI functions
@@ -122,8 +133,17 @@ def update_main_image(canvas, input_img_var, selected_file_path):
     global image_ref # To prevent garbage collection
     global img
 
+    
+
     update_image = load_img(selected_file_path)
     update_image = cv2.resize(update_image, (228, 164))
+
+    for y in range(0,update_image.shape[0]-2):
+        for x in range(0,update_image.shape[1]-2):
+            if update_image[y][x] != 0:
+                update_image[y][x] = 255
+
+
     img = update_image
     update_image = Image.fromarray(update_image)
     update_image = ImageTk.PhotoImage(update_image)
@@ -242,7 +262,13 @@ def load_img(path):
     canvas.itemconfigure(step3_img_var, state="hidden")
     canvas.itemconfigure(step4_img_var, state="hidden")
     canvas.itemconfigure(img_result_var, state="hidden")
-    return img
+
+    for y in range(0,img.shape[0]-2):
+        for x in range(0,img.shape[1]-2):
+            if binary_img[y][x] != 0:
+                binary_img[y][x] = 255
+
+    return binary_img
 
 # Morphological functions
 def thic_iter(fun, iter, img):
@@ -253,7 +279,7 @@ def thic_iter(fun, iter, img):
 
 def execute_dilation():
     global dilation
-    dilation, step_iter_1, step_iter_2, step_iter_3, step_iter_4 = thic_iter(defaultThickening, slider.get(), img)
+    dilation, step_iter_1, step_iter_2, step_iter_3, step_iter_4 = defaultThickening(img, slider.get())
     update_step1_image(canvas, step1_img_var, step_iter_1)
     update_step2_image(canvas, step2_img_var, step_iter_2)
     update_step3_image(canvas, step3_img_var, step_iter_3)
@@ -332,11 +358,16 @@ def on_select(*args):
 binary_img = cv2.imread(r'img/ertka.bmp', cv2.IMREAD_GRAYSCALE)
 ret, binary_img = cv2.threshold(binary_img, threshold_value, max_value, cv2.THRESH_BINARY)
 
-img = cv2.cvtColor(binary_img, cv2.COLOR_GRAY2BGR)
-img = cv2.resize(img, (228, 164))
+#img = cv2.cvtColor(binary_img, cv2.COLOR_GRAY2BGR)
+#img = cv2.resize(img, (228, 164))
+img  = cv2.resize(binary_img, (228, 164))
 
+for y in range(0,img.shape[0]-2):
+        for x in range(0,img.shape[1]-2):
+            if img[y][x] != 0:
+                img[y][x] = 255
 # Apply the morphological dilation
-dilation, step1, step2, step3, step4 = defaultThickening(img)
+dilation, step1, step2, step3, step4 = defaultThickening(img,1)
 
 
 # Create a window and canvas to display the images
