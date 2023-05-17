@@ -26,6 +26,9 @@ mask_filenames = {
     "Golay Mask L": "mask/maskL.png",
     "Golay Mask M": "mask/maskM.png",
     "Golay Mask R": "mask/maskR.png",
+    "Golay Mask Skiz": "mask/goleySkiz.png",
+    "Skiz": "mask/skiz.png",
+    "Mask Canv": "mask/maskCanv.png",
 }
 
 dictionary = {
@@ -35,7 +38,7 @@ dictionary = {
     "Step 3": "Krok 3",
     "Step 4": "Krok 4",
     "Result Image": "Obraz Wynikowy",
-    "Update Image": "Aktualizuj obraz",
+    "Execute thickening": "Wykonaj pogrubienie",
     "Load Image": "Wczytaj obraz",
     "Save Image": "Zapisz obraz",
     "PL": "EN",
@@ -218,6 +221,8 @@ def update_mask_image(*args):
     mask_name = selected_mask_var.get()
     mask_img = load_img(os.path.join(program_dir, mask_filenames[mask_name]))
     mask_img = Image.fromarray(mask_img)
+    mask_img = mask_img.resize((300, 150), Image.LANCZOS)
+
     mask_img = ImageTk.PhotoImage(mask_img)
 
     mask_img_var = canvas.create_image(margin_size*4 + img.shape[0] + 50, margin_size-20, image=mask_img, anchor='nw')
@@ -307,7 +312,7 @@ def change_language():
     else:
         lang = "en"
     update_text()
-    update_button_text(update_button, "Update Image")
+    update_button_text(update_button, "Execute thickening")
     update_button_text(load_button, "Load Image")
     update_button_text(save_button, "Save Image")
     update_button_text(change_lang_button, "PL")
@@ -414,7 +419,7 @@ canvas.itemconfigure(img_result_var, state="hidden")
 
 
 #Buttons
-update_button = Button(root, text='Update Image', command=execute_dilation)
+update_button = Button(root, text='Execute thickening', command=execute_dilation)
 load_button = Button(root, text='Load Image', command=open_file_dialog)
 mask_dropdown = OptionMenu(root, selected_mask_var, *mask_names, command=on_select)
 save_button = Button(root, text='Save Image', command=save_file)
