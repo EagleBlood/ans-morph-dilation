@@ -42,6 +42,7 @@ dictionary = {
     "Load Image": "Wczytaj obraz",
     "Save Image": "Zapisz obraz",
     "PL": "EN",
+    "Load result to Input Image": "Wczytaj do obrazu wejściowego",
 }
 
 mask_names = list(mask_filenames.keys())
@@ -146,6 +147,21 @@ def update_main_image(canvas, input_img_var, selected_file_path):
             if update_image[y][x] != 0:
                 update_image[y][x] = 255
 
+
+    img = update_image
+    update_image = Image.fromarray(update_image)
+    update_image = ImageTk.PhotoImage(update_image)
+
+    canvas.itemconfig(input_img_var, image=update_image)
+    image_ref = update_image
+    
+    return update_image
+
+def update_main_image_from_dilation(canvas, input_img_var, result_image):
+    global image_ref # To prevent garbage collection
+    global img
+
+    update_image = result_image
 
     img = update_image
     update_image = Image.fromarray(update_image)
@@ -291,7 +307,15 @@ def execute_dilation():
     update_step4_image(canvas, step4_img_var, step_iter_4)
     update_result_images(canvas, img_result_var, dilation)
 
+def load_to_input():
+    if img_result_var is not "hidden":
+        update_main_image_from_dilation(canvas, input_img_var, dilation)
 
+        canvas.itemconfigure(step1_img_var, state="hidden")
+        canvas.itemconfigure(step2_img_var, state="hidden")
+        canvas.itemconfigure(step3_img_var, state="hidden")
+        canvas.itemconfigure(step4_img_var, state="hidden")
+        canvas.itemconfigure(img_result_var, state="hidden")
 
 # Language functions
 def translate_text(text, lang):
@@ -316,6 +340,7 @@ def change_language():
     update_button_text(load_button, "Load Image")
     update_button_text(save_button, "Save Image")
     update_button_text(change_lang_button, "PL")
+    update_button_text(result_to_input_button, "Load result to Input Image")
 
 def update_button_text(button, button_text):
     if button_text in dictionary:
@@ -424,6 +449,7 @@ load_button = Button(root, text='Load Image', command=open_file_dialog)
 mask_dropdown = OptionMenu(root, selected_mask_var, *mask_names, command=on_select)
 save_button = Button(root, text='Save Image', command=save_file)
 change_lang_button = Button(root, text='PL', command=change_language)
+result_to_input_button = Button(root, text='Load result to Input Image', command=load_to_input)
 slider, slider_frame = create_slider(root)
 
 
@@ -432,7 +458,8 @@ update_button_window = canvas.create_window(margin_size*2 + img.shape[1] + 25, m
 load_button_window = canvas.create_window(margin_size*2 + img.shape[1] + 25, margin_size+40, window=load_button)
 mask_dropdown_window = canvas.create_window(margin_size*2 + img.shape[1] + 25, margin_size+80, window=mask_dropdown)
 change_lang_window = canvas.create_window(margin_size*2 + img.shape[1] + 25, margin_size+120, window=change_lang_button)
-save_button_window = canvas.create_window(margin_size*2 + table_size[0]*2 +  img.shape[1]/2, margin_size*2+img.shape[0]+table_margin_size+table_size[1]+50, window=save_button)
+save_button_window = canvas.create_window(margin_size*2 + table_size[0]*2 +  img.shape[1]/2, margin_size*2+img.shape[0]+table_margin_size+table_size[1]+52, window=save_button)
+result_to_input_window = canvas.create_window(margin_size*2 + table_size[0]*2 +  img.shape[1]/2, margin_size*2+img.shape[0]+table_margin_size+table_size[1]+80, window=result_to_input_button)
 slider_window = canvas.create_window(margin_size*2 + img.shape[1]*2, margin_size+160, window=slider_frame)
 
 
