@@ -77,8 +77,9 @@ def defaultThickening(img,iter):
 
     
     if len(selected_mask) != 3:
-        imgTmp = np.array(imgA,np.uint8)
+        
         for a in range(iter):
+            imgTmp = np.array(imgA,np.uint8)
             for se in selected_mask:           
                 for y in range(0,img.shape[0]-2):
                     for x in range(0,img.shape[1]-2):
@@ -94,6 +95,7 @@ def defaultThickening(img,iter):
     else:
         se = selected_mask
         for a in range(iter):
+            imgTmp = np.array(imgA,np.uint8)
             for y in range(0,img.shape[0]-2):
                 for x in range(0,img.shape[1]-2):
                     masked = imgA[y:y+3,x:x+3]
