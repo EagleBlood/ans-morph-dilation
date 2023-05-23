@@ -30,7 +30,6 @@ mask_filenames = {
     "Golay Mask L": "mask/maskL.png",
     "Golay Mask M": "mask/maskM.png",
     "Golay Mask R": "mask/maskR.png",
-    "Golay Mask Skiz": "mask/goleySkiz.png",
     "Skiz": "mask/skiz.png",
     "Mask Canv": "mask/maskCanv.png",
 }
@@ -43,7 +42,6 @@ mask_names = [
     "Golay Mask L",
     "Golay Mask M",
     "Golay Mask R",
-    "Golay Mask Skiz",
     "Skiz",
     "Mask Canv"
 ]
@@ -155,17 +153,6 @@ def update_main_image(canvas, selected_file_path):
     
     return update_image
 
-# def update_main_image_from_dilation(canvas, result_image):
-#     global image_ref # To prevent garbage collection
-#     global img
-
-#     img_pil = Image.fromarray(result_image)
-#     img = ImageTk.PhotoImage(img_pil)
-
-#     canvas.create_image(0, 0, anchor='nw', image=img)
-#     canvas.image = img
-#     image_ref = img
-
 def update_image(canvas, image):
     global img_res_ref
 
@@ -175,36 +162,6 @@ def update_image(canvas, image):
     canvas.create_image(0, 0, anchor='nw', image=img_tk)
     canvas.image = img_tk
     img_res_ref = img_tk
-
-# def update_result_images(canvas, img):
-#     global img_res_ref # To prevent garbage collection
-
-#     img_pil = Image.fromarray(img)
-#     img_tk = ImageTk.PhotoImage(img_pil)
-    
-#     canvas.create_image(0, 0, anchor='nw', image=img_tk)
-#     canvas.image = img_tk
-#     img_res_ref = img_tk
-
-# def update_diff_images(canvas, img):
-#     global img_res_ref # To prevent garbage collection
-
-#     img_pil = Image.fromarray(img)
-#     img_tk = ImageTk.PhotoImage(img_pil)
-    
-#     canvas.create_image(0, 0, anchor='nw', image=img_tk)
-#     canvas.image = img_tk
-#     img_res_ref = img_tk
-
-# def update_load_image(canvas, img):
-#     global img_res_ref # To prevent garbage collection
-
-#     img_pil = Image.fromarray(img)
-#     img_tk = ImageTk.PhotoImage(img_pil)
-    
-#     canvas.create_image(0, 0, anchor='nw', image=img_tk)
-#     canvas.image = img_tk
-#     img_res_ref = img_tk
 
 def on_slider_move(value):
     return value
@@ -224,9 +181,10 @@ def update_mask_image(*args):
         mask_ref = mask_img
 
 def clear_all():
-    global img, dilation, selected_mask_var, slider
+    global img, dilation, selected_mask_var, slider, selected_mask
 
     img = None
+    selected_mask = None
     dilation = None
 
     selected_mask_var.set(mask_value)
@@ -238,6 +196,7 @@ def clear_all():
 
     save_button.config(state="disabled")
     rti_button.config(state="disabled")
+    update_button.config(state="normal")
 
 
 # File functions
@@ -289,6 +248,7 @@ def execute_dilation():
 
         save_button.config(state="normal")
         rti_button.config(state="normal")
+        update_button.config(state="disabled")
         
 def load_to_input():
 
@@ -297,7 +257,8 @@ def load_to_input():
     tmp_img = dilation
     clear_all()
     img = tmp_img    
-    update_image(input_image_var, img)    
+    update_image(input_image_var, img)
+    update_button.config(state="normal")    
 
     
 
@@ -365,6 +326,10 @@ def on_select(event):
         selected_mask = msk.golayM()
     elif selected_mask_var == "Golay Mask R":
         selected_mask = msk.golayR()
+    elif selected_mask_var == "Skiz":
+        selected_mask = msk.skiz()
+    elif selected_mask_var == "Mask Canv":
+        selected_mask = msk.canvas()
 
 # Create a window and grid to display the images
 root = Tk()
