@@ -1,20 +1,24 @@
-from PIL import Image, ImageTk
+import PIL.Image as Image
+import PIL.ImageTk as ImageTk
 import numpy as np
 import cv2
-from tkinter import SINGLE, Button, OptionMenu, Scale, StringVar, Tk, Canvas, HORIZONTAL, Frame, Label, LEFT, filedialog
+from tkinter import ttk, SINGLE, Button, OptionMenu, Scale, StringVar, Tk, Canvas, HORIZONTAL, Frame, Label, LEFT, filedialog
 import os
 import masks as msk
 
 #Global variables
 program_dir = os.path.dirname(os.path.abspath(__file__))
-global img, dylation
+img = None
 margin_size = 70
 background_color = (255, 255, 255)
 font = cv2.FONT_HERSHEY_SIMPLEX
 photo_list = []
 selected_file_path = ""
+dilation, difference = None, None
+selected_mask = None
+mask_value = "Choose a mask"
 
-#Image processing variables
+# #Image processing variables
 threshold_value = 127
 max_value = 255
 
@@ -31,18 +35,34 @@ mask_filenames = {
     "Mask Canv": "mask/maskCanv.png",
 }
 
+mask_names = [
+    "Default Mask",
+    "Golay Mask C",
+    "Golay Mask D",
+    "Golay Mask E",
+    "Golay Mask L",
+    "Golay Mask M",
+    "Golay Mask R",
+    "Golay Mask Skiz",
+    "Skiz",
+    "Mask Canv"
+]
+
 dictionary = {
     "Input Image": "Obraz wejściowy",
-    "Step 1": "Krok 1",
-    "Step 2": "Krok 2",
-    "Step 3": "Krok 3",
-    "Step 4": "Krok 4",
-    "Result Image": "Obraz Wynikowy",
-    "Execute thickening": "Wykonaj pogrubienie",
+    "Result Image": "Obraz wynikowy",
     "Load Image": "Wczytaj obraz",
     "Save Image": "Zapisz obraz",
     "PL": "EN",
-    "Load result to Input Image": "Wczytaj do obrazu wejściowego",
+    "Load into Image": "Wczytaj do obrazu wejściowego",
+    "Mask":"Maska",
+    "Choose a mask":"Wybierz maskę",
+    "Difference":"Różnica",
+    "Loaded Image":"Wczytany Obraz",
+    "Iterations":"Iteracje",
+    "Morphological dilation operations":"Morfologiczne operacje pogrubiania",
+    "Settings MENU":"Ustawienia programu",
+    "Result Image MENU":"Operacje na obrazie wyjściowym",
 }
 
 mask_names = list(mask_filenames.keys())
@@ -57,7 +77,7 @@ img_step3_ref = None
 img_step4_ref = None
 lang = "en"
 text_1, text_2, text_3, text_4, text_5, text_6 = None, None, None, None, None, None
-selected_mask = msk.defaultMask()
+selected_mask = None
 
 
 #Mask functions
@@ -68,17 +88,15 @@ def defaultThickening(img,iter):
         for x in range(0,img.shape[1]-2):
             if img[y][x] != 0:
                 img[y][x] = 255
-
-
+                
 
     imgA = np.array(img,np.uint8)
-
-    
-
+ 
     
     if len(selected_mask) != 3:
-        imgTmp = np.array(imgA,np.uint8)
+        
         for a in range(iter):
+            imgTmp = np.array(imgA,np.uint8)
             for se in selected_mask:           
                 for y in range(0,img.shape[0]-2):
                     for x in range(0,img.shape[1]-2):
@@ -94,6 +112,7 @@ def defaultThickening(img,iter):
     else:
         se = selected_mask
         for a in range(iter):
+            imgTmp = np.array(imgA,np.uint8)
             for y in range(0,img.shape[0]-2):
                 for x in range(0,img.shape[1]-2):
                     masked = imgA[y:y+3,x:x+3]
@@ -111,37 +130,16 @@ def defaultThickening(img,iter):
             
 
     
-    return imgA, imgDiff, imgDiff, imgDiff, imgDiff
+    return imgA, imgDiff
 
 
-# GUI functions
-def setPhotoOnCanvas(canvas, img, x, y, photo_list):
-    # Żeby można było się dostać do modyfikacji obrazu trzeba podać jako argument id obrazu które zwraca funkcja
-    img_pil = Image.fromarray(img)
-    img_tk = ImageTk.PhotoImage(img_pil)
-    photo_list.append(img_tk)
-    img_return = canvas.create_image(x, y, image=photo_list[-1], anchor='nw')
-    return img_return
-
-def replace_image_with_color(image_path):
-    img = Image.open(image_path)
-    width, height = img.size
-    data = img.load()
-    for x in range(width):
-        for y in range(height):
-            data[x, y] = (255, 255, 255)  # replace the pixel with F0F0F0 color
-    img.save(image_path)
-    
-
-def update_main_image(canvas, input_img_var, selected_file_path):
+def update_main_image(canvas, selected_file_path):
     global image_ref # To prevent garbage collection
     global img
-
     
-
     update_image = load_img(selected_file_path)
     update_image = cv2.resize(update_image, (228, 164))
-
+    
     for y in range(0,update_image.shape[0]-2):
         for x in range(0,update_image.shape[1]-2):
             if update_image[y][x] != 0:
@@ -149,109 +147,97 @@ def update_main_image(canvas, input_img_var, selected_file_path):
 
 
     img = update_image
-    update_image = Image.fromarray(update_image)
-    update_image = ImageTk.PhotoImage(update_image)
+    update_image = ImageTk.PhotoImage(Image.fromarray(update_image))
 
-    canvas.itemconfig(input_img_var, image=update_image)
+    canvas.create_image(0, 0, anchor='nw', image=update_image)
+    canvas.image = update_image
     image_ref = update_image
     
     return update_image
 
-def update_main_image_from_dilation(canvas, input_img_var, result_image):
-    global image_ref # To prevent garbage collection
-    global img
+# def update_main_image_from_dilation(canvas, result_image):
+#     global image_ref # To prevent garbage collection
+#     global img
 
-    update_image = result_image
+#     img_pil = Image.fromarray(result_image)
+#     img = ImageTk.PhotoImage(img_pil)
 
-    img = update_image
-    update_image = Image.fromarray(update_image)
-    update_image = ImageTk.PhotoImage(update_image)
+#     canvas.create_image(0, 0, anchor='nw', image=img)
+#     canvas.image = img
+#     image_ref = img
 
-    canvas.itemconfig(input_img_var, image=update_image)
-    image_ref = update_image
-    
-    return update_image
+def update_image(canvas, image):
+    global img_res_ref
 
-def update_result_images(canvas, img_result_var, img):
-    global img_res_ref # To prevent garbage collection
-
-    resized_img = cv2.resize(img, (228, 164))
-    img_pil = Image.fromarray(img)
+    img_pil = Image.fromarray(image)
     img_tk = ImageTk.PhotoImage(img_pil)
     
-    canvas.itemconfig(img_result_var, image=img_tk)
+    canvas.create_image(0, 0, anchor='nw', image=img_tk)
+    canvas.image = img_tk
     img_res_ref = img_tk
-    canvas.itemconfigure(img_result_var, state="normal")
 
-def update_step1_image(canvas, img_result_var, img):
-    global img_step1_ref # To prevent garbage collection
+# def update_result_images(canvas, img):
+#     global img_res_ref # To prevent garbage collection
 
-    resized_img = cv2.resize(img, (table_size[0], table_size[1]))
-    img_pil = Image.fromarray(resized_img)
-    img_tk = ImageTk.PhotoImage(img_pil)
+#     img_pil = Image.fromarray(img)
+#     img_tk = ImageTk.PhotoImage(img_pil)
     
-    canvas.itemconfig(img_result_var, image=img_tk)
-    img_step1_ref = img_tk
-    canvas.itemconfigure(img_result_var, state="normal")
+#     canvas.create_image(0, 0, anchor='nw', image=img_tk)
+#     canvas.image = img_tk
+#     img_res_ref = img_tk
 
-def update_step2_image(canvas, img_result_var, img):
-    global img_step2_ref # To prevent garbage collection
+# def update_diff_images(canvas, img):
+#     global img_res_ref # To prevent garbage collection
 
-    resized_img = cv2.resize(img, (table_size[0], table_size[1]))
-    img_pil = Image.fromarray(resized_img)
-    img_tk = ImageTk.PhotoImage(img_pil)
+#     img_pil = Image.fromarray(img)
+#     img_tk = ImageTk.PhotoImage(img_pil)
     
-    canvas.itemconfig(img_result_var, image=img_tk)
-    img_step2_ref = img_tk
-    canvas.itemconfigure(img_result_var, state="normal")
+#     canvas.create_image(0, 0, anchor='nw', image=img_tk)
+#     canvas.image = img_tk
+#     img_res_ref = img_tk
 
-def update_step3_image(canvas, img_result_var, img):
-    global img_step3_ref # To prevent garbage collection
+# def update_load_image(canvas, img):
+#     global img_res_ref # To prevent garbage collection
 
-    resized_img = cv2.resize(img, (table_size[0], table_size[1]))
-    img_pil = Image.fromarray(resized_img)
-    img_tk = ImageTk.PhotoImage(img_pil)
+#     img_pil = Image.fromarray(img)
+#     img_tk = ImageTk.PhotoImage(img_pil)
     
-    canvas.itemconfig(img_result_var, image=img_tk)
-    img_step3_ref = img_tk
-    canvas.itemconfigure(img_result_var, state="normal")
-
-def update_step4_image(canvas, img_result_var, img):
-    global img_step4_ref # To prevent garbage collection
-
-    resized_img = cv2.resize(img, (table_size[0], table_size[1]))
-    img_pil = Image.fromarray(resized_img)
-    img_tk = ImageTk.PhotoImage(img_pil)
-    
-    canvas.itemconfig(img_result_var, image=img_tk)
-    img_step4_ref = img_tk
-    canvas.itemconfigure(img_result_var, state="normal")
+#     canvas.create_image(0, 0, anchor='nw', image=img_tk)
+#     canvas.image = img_tk
+#     img_res_ref = img_tk
 
 def on_slider_move(value):
-    print(f"Slider value: {value}")
     return value
 
 def update_mask_image(*args):
     global mask_ref # To prevent garbage collection
-
+    
     mask_name = selected_mask_var.get()
-    mask_img = load_img(os.path.join(program_dir, mask_filenames[mask_name]))
-    mask_img = Image.fromarray(mask_img)
-    mask_img = mask_img.resize((300, 150), Image.LANCZOS)
+    if mask_name != mask_value:
+        mask_img = load_img(os.path.join(program_dir, mask_filenames[mask_name]))
+        mask_img = Image.fromarray(mask_img)
+        mask_img = mask_img.resize((228, 164), Image.LANCZOS)
 
-    mask_img = ImageTk.PhotoImage(mask_img)
+        mask_img = ImageTk.PhotoImage(mask_img)
 
-    mask_img_var = canvas.create_image(margin_size*4 + img.shape[0] + 50, margin_size-20, image=mask_img, anchor='nw')
-    mask_ref = mask_img
+        mask_image_var.create_image(0, 0, anchor='nw', image=mask_img)
+        mask_ref = mask_img
 
-def create_slider(parent):
-    slider_frame = Frame(parent)
-    slider_frame.pack()
-    
-    slider = Scale(slider_frame, from_=1, to=10, length=200, orient=HORIZONTAL, label="Iter", command=on_slider_move)
-    slider.pack(side=LEFT)
-    
-    return slider, slider_frame
+def clear_all():
+    global img, dilation, selected_mask_var, slider
+
+    img = None
+    dilation = None
+
+    selected_mask_var.set(mask_value)
+    slider.set(1)
+    input_image_var.delete("all")
+    mask_image_var.delete("all")
+    difference_image_var.delete("all")
+    result_image_var.delete("all")
+
+    save_button.config(state="disabled")
+    rti_button.config(state="disabled")
 
 
 # File functions
@@ -265,7 +251,7 @@ def open_file_dialog():
     selected_file_path = file_path
 
     if file_path:
-        update_main_image(canvas, input_img_var, selected_file_path)
+        update_main_image(input_image_var, selected_file_path)
 
 def save_file():
     file_path = filedialog.asksaveasfilename(initialdir=os.getcwd(), defaultextension=".jpg", filetypes=[(".jpg", "*.jpg"), ("All Files", "*.*")])
@@ -277,12 +263,6 @@ def load_img(path):
     ret, binary_img = cv2.threshold(binary_img, threshold_value, max_value, cv2.THRESH_BINARY)
 
     img = cv2.cvtColor(binary_img, cv2.COLOR_GRAY2BGR)
-
-    canvas.itemconfigure(step1_img_var, state="hidden")
-    canvas.itemconfigure(step2_img_var, state="hidden")
-    canvas.itemconfigure(step3_img_var, state="hidden")
-    canvas.itemconfigure(step4_img_var, state="hidden")
-    canvas.itemconfigure(img_result_var, state="hidden")
 
     for y in range(0,img.shape[0]-2):
         for x in range(0,img.shape[1]-2):
@@ -299,23 +279,27 @@ def thic_iter(fun, iter, img):
     return imgTab
 
 def execute_dilation():
-    global dilation
-    dilation, step_iter_1, step_iter_2, step_iter_3, step_iter_4 = defaultThickening(img, slider.get())
-    update_step1_image(canvas, step1_img_var, step_iter_1)
-    update_step2_image(canvas, step2_img_var, step_iter_2)
-    update_step3_image(canvas, step3_img_var, step_iter_3)
-    update_step4_image(canvas, step4_img_var, step_iter_4)
-    update_result_images(canvas, img_result_var, dilation)
+    global dilation, difference, selected_mask    
 
+    if img is not None and selected_mask is not None:
+        dilation, difference = defaultThickening(img, slider.get())
+
+        update_image(difference_image_var, difference)
+        update_image(result_image_var, dilation)
+
+        save_button.config(state="normal")
+        rti_button.config(state="normal")
+        
 def load_to_input():
-    if img_result_var is not "hidden":
-        update_main_image_from_dilation(canvas, input_img_var, dilation)
 
-        canvas.itemconfigure(step1_img_var, state="hidden")
-        canvas.itemconfigure(step2_img_var, state="hidden")
-        canvas.itemconfigure(step3_img_var, state="hidden")
-        canvas.itemconfigure(step4_img_var, state="hidden")
-        canvas.itemconfigure(img_result_var, state="hidden")
+    global img, dilation
+
+    tmp_img = dilation
+    clear_all()
+    img = tmp_img    
+    update_image(input_image_var, img)    
+
+    
 
 # Language functions
 def translate_text(text, lang):
@@ -336,11 +320,11 @@ def change_language():
     else:
         lang = "en"
     update_text()
-    update_button_text(update_button, "Execute thickening")
+    update_button_text(update_button, "START")
     update_button_text(load_button, "Load Image")
     update_button_text(save_button, "Save Image")
     update_button_text(change_lang_button, "PL")
-    update_button_text(result_to_input_button, "Load result to Input Image")
+    update_button_text(rti_button, "Load into Image")
 
 def update_button_text(button, button_text):
     if button_text in dictionary:
@@ -350,122 +334,128 @@ def update_button_text(button, button_text):
         button.config(text=button_text)
 
 def update_text():
-    global text_1, text_2, text_3, text_4, text_5, text_6
+    global mask_value
 
-    canvas.delete(text_1, text_2, text_3, text_4, text_5, text_6)
-    text_1 = canvas.create_text(margin_size+img.shape[1]/2, margin_size-40, text=translate_text("Input Image", lang), font=font)
-    text_2 = canvas.create_text(step1_pos[0] + table_size[0]/2, step1_pos[1]-10, text=translate_text("Step 1", lang), font=font)
-    text_3 = canvas.create_text(step2_pos[0] + table_size[0]/2, step2_pos[1]-10, text=translate_text("Step 2", lang), font=font)
-    text_4 = canvas.create_text(step3_pos[0] + table_size[0]/2, step3_pos[1]-10, text=translate_text("Step 3", lang), font=font)
-    text_5 = canvas.create_text(step4_pos[0] + table_size[0]/2, step4_pos[1]-10, text=translate_text("Step 4", lang), font=font)
-    text_6 = canvas.create_text(margin_size*2 + table_size[0]*2 +  img.shape[1]/2, margin_size*2+img.shape[0]-10, text=translate_text("Result Image", lang), font=font)
+    label_input_image.config(text=translate_text("Input Image", lang))
+    label_difference.config(text=translate_text("Difference", lang))
+    label_mask_image.config(text=translate_text("Mask", lang))
+    label_result.config(text=translate_text("Result Image", lang))
+    label_iterations.config(text=translate_text("Iterations", lang))
+    label_mask_image.config(text=translate_text("Mask", lang))
+    appName.config(text=translate_text("Morphological dilation operations", lang))
+    text_menu.config(text=translate_text("Settings MENU", lang))
+    text_result_op.config(text=translate_text("Result Image MENU", lang))
+    mask_value = translate_text("Choose a mask", lang)
+    selected_mask_var.set(mask_value)
 
-
-def on_select(*args):
-
+def on_select(event):
     global selected_mask
-
-    if selected_mask_var.get() == "Default Mask":
+    selected_mask_var = event.widget.get()
+    if selected_mask_var == "Default Mask":
         selected_mask = msk.defaultMask()
-    elif selected_mask_var.get() == "Golay Mask C":
+    elif selected_mask_var == "Golay Mask C":
         selected_mask = msk.golayC()
-    elif selected_mask_var.get() == "Golay Mask D":
+    elif selected_mask_var == "Golay Mask D":
         selected_mask = msk.golayD()
-    elif selected_mask_var.get() == "Golay Mask E":
+    elif selected_mask_var == "Golay Mask E":
         selected_mask = msk.golayE()
-    elif selected_mask_var.get() == "Golay Mask L":
+    elif selected_mask_var == "Golay Mask L":
         selected_mask = msk.golayL()
-    elif selected_mask_var.get() == "Golay Mask M":
+    elif selected_mask_var == "Golay Mask M":
         selected_mask = msk.golayM()
-    elif selected_mask_var.get() == "Golay Mask R":
+    elif selected_mask_var == "Golay Mask R":
         selected_mask = msk.golayR()
 
-# Load the input image
-# img = cv2.imread(r'img/ertka.bmp', 0)
-
-
-# Load the binary image
-binary_img = cv2.imread(r'img/ertka.bmp', cv2.IMREAD_GRAYSCALE)
-ret, binary_img = cv2.threshold(binary_img, threshold_value, max_value, cv2.THRESH_BINARY)
-
-#img = cv2.cvtColor(binary_img, cv2.COLOR_GRAY2BGR)
-#img = cv2.resize(img, (228, 164))
-img  = cv2.resize(binary_img, (228, 164))
-
-for y in range(0,img.shape[0]-2):
-        for x in range(0,img.shape[1]-2):
-            if img[y][x] != 0:
-                img[y][x] = 255
-# Apply the morphological dilation
-dilation, step1, step2, step3, step4 = defaultThickening(img,1)
-
-
-# Create a window and canvas to display the images
+# Create a window and grid to display the images
 root = Tk()
-root.title('Morphological Dilation Steps')
-canvas = Canvas(root, width=3*img.shape[1] + 4*margin_size, height=2*img.shape[0] + 3*margin_size)
-canvas.pack()
+root.title('Morphological Dilation Operations')
 
+# frames
+mainFrame = Frame(root)
+mainFrame.grid(row=0, column=0, padx=20, pady=20)
+
+frame1 = Frame(mainFrame)
+frame1.grid(row=1, column=0, padx=10, pady=10)
+
+frame2 = Frame(mainFrame)
+frame2.grid(row=1, column=2, padx=10, pady=10, sticky="n")
 
 # Add the mask images
 selected_mask_var = StringVar()
-selected_mask_var.set(mask_names[0])  # set the default mask to the first in the list
+selected_mask_var.set(mask_value)
 selected_mask_var.trace("w", update_mask_image)
 
 
-# Add the images on cavas
-input_img_var = setPhotoOnCanvas(canvas, img, margin_size, margin_size-20, photo_list)
+# buttons
+update_button = Button(frame1, text='START', command=execute_dilation, font=("Lato", 10, "bold"))
+load_button = Button(frame1, text='Load Image', command=open_file_dialog)
+mask_dropdown = OptionMenu(frame1, selected_mask_var, *mask_names, command=on_select)
+save_button = Button(frame1, text='Save Image', state="disabled", command=save_file)
+change_lang_button = Button(frame1, text='PL', command=change_language)
+rti_button = Button(frame1, text='Load into input', state="disabled", command=load_to_input)
+clear_button = Button(frame1, text='Reset', command=clear_all)
 
-# Set position valaues
-table_size = (int(img.shape[1]//1.3), int(img.shape[0]//1.3))
-table_margin_size = 1
-table_start_x = margin_size
-table_start_y = margin_size*3+40
+# slider
+slider = Scale(frame1, from_=1, to=10, orient=HORIZONTAL, command=on_slider_move)
+mask_dropdown = ttk.Combobox(frame1, textvariable=selected_mask_var, values=mask_names, state='readonly')
+mask_dropdown.bind("<<ComboboxSelected>>", on_select)
 
-# Define positions of each step image
-step1_pos = (margin_size, margin_size*3+40)
-step2_pos = (margin_size+table_size[0] - table_margin_size + 40, margin_size*3+40)
-step3_pos = (margin_size, margin_size*3+60+table_size[1] - table_margin_size)
-step4_pos = (margin_size+table_size[0] - table_margin_size + 40, margin_size*3+60+table_size[1] - table_margin_size)
+# images 
+input_image_var = Canvas(frame2, width=227, height=163, bg="light blue")
+mask_image_var = Canvas(frame2, width=227, height=163,bg="light blue")
+difference_image_var = Canvas(frame2, width=227, height=163, bg="light blue")
+result_image_var = Canvas(frame2, width=227, height=163, bg="light blue")
 
-# Add the images on cavas
-step1_img_var = setPhotoOnCanvas(canvas, cv2.resize(step1, (table_size[0], table_size[1])), step1_pos[0], step1_pos[1], photo_list)
-step2_img_var = setPhotoOnCanvas(canvas, cv2.resize(step2, (table_size[0], table_size[1])), step2_pos[0], step2_pos[1], photo_list)
-step3_img_var = setPhotoOnCanvas(canvas, cv2.resize(step3, (table_size[0], table_size[1])), step3_pos[0], step3_pos[1], photo_list)
-step4_img_var = setPhotoOnCanvas(canvas, cv2.resize(step4, (table_size[0], table_size[1])), step4_pos[0], step4_pos[1], photo_list)
+# separators
+separator1 = ttk.Separator(frame1, orient="horizontal")
+separator2 = ttk.Separator(frame1, orient="horizontal")
+separator3 = ttk.Separator(mainFrame, orient="vertical")
 
-img_result_var = setPhotoOnCanvas(canvas, dilation, margin_size*2 + table_size[0]*2, margin_size*2+img.shape[0], photo_list)
+# labels
+appName = Label(mainFrame, text="Morphological dilation operations", font=('Lato', 25, 'bold'))
+text_menu= Label(frame1, text="Settings MENU", font=("Lato", 11, "bold"))
+label_choose_mask = Label(frame1, text="Choose a mask")
+label_iterations = Label(frame1, text="Iterations")
+text_result_op = Label(frame1, text="Result Image MENU", font=("Lato", 11, "bold"))
+label_input_image = Label(frame2, text="Input Image")
+label_mask_image = Label(frame2, text="Mask")
+label_difference = Label(frame2, text="Difference")
+label_result = Label(frame2, text="Result Image")
 
-canvas.itemconfigure(step1_img_var, state="hidden")
-canvas.itemconfigure(step2_img_var, state="hidden")
-canvas.itemconfigure(step3_img_var, state="hidden")
-canvas.itemconfigure(step4_img_var, state="hidden")
-canvas.itemconfigure(img_result_var, state="hidden")
+# ----mainFrame----
+appName.grid(row=0, column=0, columnspan=3, pady=(0, 10))
+
+# ----frame1----
+text_menu.grid(row=0, column=0, columnspan=2, padx=5, pady=0)
+separator1.grid(row=1, column=0, columnspan=2, pady=5, sticky="ew")
+load_button.grid(row=2, column=0, padx=5, pady=5, sticky="ew")
+change_lang_button.grid(row=2, column=1, padx=5, pady=5, sticky="ew")
+mask_dropdown.grid(row=3, column=0, columnspan=2, padx=5, pady=(10,0), sticky="ew")
+label_iterations.grid(row=4, column=0, columnspan=2, padx=5, pady=(5,0), sticky="w")
+slider.grid(row=5, column=0, columnspan=2, padx=5, pady=(0,10), sticky="w")
+clear_button.grid(row=6, column=1, sticky="ew", padx=5, pady=5)
+update_button.grid(row=6, column=0, sticky="ew", padx=5, pady=5)
+text_result_op.grid(row=7, column=0, columnspan=2, padx=5, pady=(15, 0))
+separator2.grid(row=8, column=0, columnspan=2, pady=5, sticky="ew")
+save_button.grid(row=9, column=0, columnspan=2,  padx=5, pady=5, sticky="ew")
+rti_button.grid(row=10, column=0, columnspan=2,  padx=5, pady=5, sticky="ew")
+
+# --------------
+
+separator3.grid(row=1, column=1, padx=5 ,pady=5, sticky="ns")
+
+# ----frame2----
+input_image_var.grid(row=0, column=0, padx=10, pady=10)
+label_input_image.grid(row=1, column=0, padx=10, pady=0)
+mask_image_var.grid(row=0, column=1, padx=10, pady=10)
+label_mask_image.grid(row=1, column=1, padx=10, pady=0)
+difference_image_var.grid(row=2, column=0, padx=10, pady=10)
+label_difference.grid(row=3, column=0, padx=10, pady=0)
+result_image_var.grid(row=2, column=1, columnspan=2, padx=10, pady=10)
+label_result.grid(row=3, column=1, columnspan=2, padx=10, pady=0)
 
 
-#Buttons
-update_button = Button(root, text='Execute thickening', command=execute_dilation)
-load_button = Button(root, text='Load Image', command=open_file_dialog)
-mask_dropdown = OptionMenu(root, selected_mask_var, *mask_names, command=on_select)
-save_button = Button(root, text='Save Image', command=save_file)
-change_lang_button = Button(root, text='PL', command=change_language)
-result_to_input_button = Button(root, text='Load result to Input Image', command=load_to_input)
-slider, slider_frame = create_slider(root)
-
-
-# Place the buttons on canvas
-update_button_window = canvas.create_window(margin_size*2 + img.shape[1] + 25, margin_size, window=update_button)
-load_button_window = canvas.create_window(margin_size*2 + img.shape[1] + 25, margin_size+40, window=load_button)
-mask_dropdown_window = canvas.create_window(margin_size*2 + img.shape[1] + 25, margin_size+80, window=mask_dropdown)
-change_lang_window = canvas.create_window(margin_size*2 + img.shape[1] + 25, margin_size+120, window=change_lang_button)
-save_button_window = canvas.create_window(margin_size*2 + table_size[0]*2 +  img.shape[1]/2, margin_size*2+img.shape[0]+table_margin_size+table_size[1]+52, window=save_button)
-result_to_input_window = canvas.create_window(margin_size*2 + table_size[0]*2 +  img.shape[1]/2, margin_size*2+img.shape[0]+table_margin_size+table_size[1]+80, window=result_to_input_button)
-slider_window = canvas.create_window(margin_size*2 + img.shape[1]*2, margin_size+160, window=slider_frame)
-
-
-# Set default mask image
 update_text()
 update_mask_image()
-
 
 root.mainloop()
