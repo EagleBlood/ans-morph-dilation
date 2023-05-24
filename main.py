@@ -30,8 +30,9 @@ mask_filenames = {
     "Golay Mask L": "mask/maskL.png",
     "Golay Mask M": "mask/maskM.png",
     "Golay Mask R": "mask/maskR.png",
-    "Skiz": "mask/skiz.png",
+    "Thickening no bordering": "mask/skiz.png",
     "Mask Canv": "mask/maskCanv.png",
+    "Golay SKIZ": "mask/goleySkiz.png",
 }
 
 mask_names = [
@@ -42,8 +43,9 @@ mask_names = [
     "Golay Mask L",
     "Golay Mask M",
     "Golay Mask R",
-    "Skiz",
-    "Mask Canv"
+    "Thickening no bordering",
+    "Mask Canv",
+    "Golay SKIZ"
 ]
 
 dictionary = {
@@ -326,10 +328,12 @@ def on_select(event):
         selected_mask = msk.golayM()
     elif selected_mask_var == "Golay Mask R":
         selected_mask = msk.golayR()
-    elif selected_mask_var == "Skiz":
+    elif selected_mask_var == "Thickening no bordering":
         selected_mask = msk.skiz()
     elif selected_mask_var == "Mask Canv":
         selected_mask = msk.canvas()
+    elif selected_mask_var == "Golay SKIZ":
+        selected_mask = msk.goleySkiz()
 
 # Create a window and grid to display the images
 root = Tk()
