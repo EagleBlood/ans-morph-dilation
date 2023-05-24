@@ -58,7 +58,7 @@ dictionary = {
     "Difference":"Różnica",
     "Loaded Image":"Wczytany Obraz",
     "Iterations":"Iteracje",
-    "Morphological dilation operations":"Morfologiczne operacje pogrubiania",
+    "Morphological thickening operations":"Morfologiczne operacje pogrubiania",
     "Settings MENU":"Ustawienia programu",
     "Result Image MENU":"Operacje na obrazie wyjściowym",
 }
@@ -303,7 +303,7 @@ def update_text():
     label_result.config(text=translate_text("Result Image", lang))
     label_iterations.config(text=translate_text("Iterations", lang))
     label_mask_image.config(text=translate_text("Mask", lang))
-    appName.config(text=translate_text("Morphological dilation operations", lang))
+    appName.config(text=translate_text("Morphological thickening operations", lang))
     text_menu.config(text=translate_text("Settings MENU", lang))
     text_result_op.config(text=translate_text("Result Image MENU", lang))
     mask_value = translate_text("Choose a mask", lang)
@@ -333,7 +333,7 @@ def on_select(event):
 
 # Create a window and grid to display the images
 root = Tk()
-root.title('Morphological Dilation Operations')
+root.title('Morphological Thickening Operations')
 
 # frames
 mainFrame = Frame(root)
@@ -377,7 +377,7 @@ separator2 = ttk.Separator(frame1, orient="horizontal")
 separator3 = ttk.Separator(mainFrame, orient="vertical")
 
 # labels
-appName = Label(mainFrame, text="Morphological dilation operations", font=('Lato', 25, 'bold'))
+appName = Label(mainFrame, text="Morphological thickening operations", font=('Lato', 25, 'bold'))
 text_menu= Label(frame1, text="Settings MENU", font=("Lato", 11, "bold"))
 label_choose_mask = Label(frame1, text="Choose a mask")
 label_iterations = Label(frame1, text="Iterations")
