@@ -166,6 +166,13 @@ def update_image(canvas, image):
     img_res_ref = img_tk
 
 def on_slider_move(value):
+
+    difference_image_var.delete("all")
+    result_image_var.delete("all")
+
+    save_button.config(state="disabled")
+    rti_button.config(state="disabled")
+
     return value
 
 def update_mask_image(*args):
@@ -181,6 +188,12 @@ def update_mask_image(*args):
 
         mask_image_var.create_image(0, 0, anchor='nw', image=mask_img)
         mask_ref = mask_img
+    
+        difference_image_var.delete("all")
+        result_image_var.delete("all")
+
+        save_button.config(state="disabled")
+        rti_button.config(state="disabled")
 
 def clear_all():
     global img, dilation, selected_mask_var, slider, selected_mask
@@ -212,7 +225,12 @@ def open_file_dialog():
     selected_file_path = file_path
 
     if file_path:
+        result_image_var.delete("all")
+        difference_image_var.delete("all")
+
         update_main_image(input_image_var, selected_file_path)
+        save_button.config(state="disabled")
+        rti_button.config(state="disabled")
 
 def save_file():
     file_path = filedialog.asksaveasfilename(initialdir=os.getcwd(), defaultextension=".jpg", filetypes=[(".jpg", "*.jpg"), ("All Files", "*.*")])
@@ -250,7 +268,6 @@ def execute_dilation():
 
         save_button.config(state="normal")
         rti_button.config(state="normal")
-        update_button.config(state="disabled")
         
 def load_to_input():
 
@@ -416,12 +433,13 @@ separator3.grid(row=1, column=1, padx=5 ,pady=5, sticky="ns")
 # ----frame2----
 input_image_var.grid(row=0, column=0, padx=10, pady=10)
 label_input_image.grid(row=1, column=0, padx=10, pady=0)
-mask_image_var.grid(row=0, column=1, padx=10, pady=10)
-label_mask_image.grid(row=1, column=1, padx=10, pady=0)
-difference_image_var.grid(row=2, column=0, padx=10, pady=10)
-label_difference.grid(row=3, column=0, padx=10, pady=0)
-result_image_var.grid(row=2, column=1, columnspan=2, padx=10, pady=10)
-label_result.grid(row=3, column=1, columnspan=2, padx=10, pady=0)
+result_image_var.grid(row=0, column=1, padx=10, pady=10)
+label_result.grid(row=1, column=1, padx=10, pady=0)
+mask_image_var.grid(row=2, column=0, padx=10, pady=10)
+label_mask_image.grid(row=3, column=0, padx=10, pady=0)
+difference_image_var.grid(row=2, column=1, columnspan=2, padx=10, pady=10)
+label_difference.grid(row=3, column=1, columnspan=2, padx=10, pady=0)
+
 
 
 update_text()
