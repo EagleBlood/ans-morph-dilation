@@ -24,32 +24,27 @@ max_value = 255
 
 mask_filenames = {
     "Default Mask": "mask/Default.png", #1 / pogrubianie
+    "Skiz": "mask/skiz.png",# 2 
+    "Convex hull": "mask/maskCanv.png",# 3
     "Golay Mask C": "mask/maskC.png",# 4
     "Golay Mask D": "mask/maskD.png",# 5
     "Golay Mask E": "mask/maskE.png",# 6
     "Golay Mask L": "mask/maskL.png",# 7
     "Golay Mask M": "mask/maskM.png",# 8
     "Golay Mask R": "mask/maskR.png",# 9
-    "Skiz": "mask/skiz.png",# 2 
-    "Mask Canv": "mask/maskCanv.png",# 3
-    "Golay SKIZ": "mask/goleySkiz.png",# 10
+    "Golay SKIZ": "mask/golaySkiz.png",# 10
 }
-
-# dylatacja bez stykania - Skiz
-# wypułke otoczenie - convex hull
-
-# 
 
 mask_names = [
     "Default Mask",
+    "Skiz", 
+    "Convex hull",
     "Golay Mask C",
     "Golay Mask D",
     "Golay Mask E",
     "Golay Mask L",
     "Golay Mask M",
     "Golay Mask R",
-    "Skiz", 
-    "Mask Canv",
     "Golay SKIZ"
 ]
 
@@ -338,6 +333,10 @@ def on_select(event):
     selected_mask_var = event.widget.get()
     if selected_mask_var == "Default Mask":
         selected_mask = msk.defaultMask()
+    elif selected_mask_var == "Skiz":
+        selected_mask = msk.skiz()
+    elif selected_mask_var == "Convex hull":
+        selected_mask = msk.canvas()
     elif selected_mask_var == "Golay Mask C":
         selected_mask = msk.golayC()
     elif selected_mask_var == "Golay Mask D":
@@ -350,10 +349,6 @@ def on_select(event):
         selected_mask = msk.golayM()
     elif selected_mask_var == "Golay Mask R":
         selected_mask = msk.golayR()
-    elif selected_mask_var == "Thickening no bordering":
-        selected_mask = msk.skiz()
-    elif selected_mask_var == "Mask Canv":
-        selected_mask = msk.canvas()
     elif selected_mask_var == "Golay SKIZ":
         selected_mask = msk.goleySkiz()
 
