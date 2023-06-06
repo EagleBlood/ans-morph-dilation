@@ -5,7 +5,7 @@ Aplikacja do morfologicznego pogrubiania obrazów wg. masek Golay’a to narzęd
 
 ## Funkcjonalność
 
-![img1](https://cdn.discordapp.com/attachments/681154347324932219/1100756708856451163/image.png)
+![img1](https://cdn.discordapp.com/attachments/681154347324932219/1115697672431599666/image.png)
 
 <br>
 
@@ -13,7 +13,7 @@ Aby korzystać z programu, wystarczy uruchomić plik "main.py". Po pojawieniu si
 
 <br>
 
-![img2](https://cdn.discordapp.com/attachments/681154347324932219/1100762724000071790/image.png)
+![img2](https://cdn.discordapp.com/attachments/681154347324932219/1115697824584192150/image.png)
 
 
 ## Narzędzia oraz biblioteki:
