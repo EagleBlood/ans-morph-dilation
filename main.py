@@ -23,17 +23,22 @@ threshold_value = 127
 max_value = 255
 
 mask_filenames = {
-    "Default Mask": "mask/Default.png",
-    "Golay Mask C": "mask/maskC.png",    
-    "Golay Mask D": "mask/maskD.png",
-    "Golay Mask E": "mask/maskE.png",
-    "Golay Mask L": "mask/maskL.png",
-    "Golay Mask M": "mask/maskM.png",
-    "Golay Mask R": "mask/maskR.png",
-    "Thickening no bordering": "mask/skiz.png",
-    "Mask Canv": "mask/maskCanv.png",
-    "Golay SKIZ": "mask/goleySkiz.png",
+    "Default Mask": "mask/Default.png", #1 / pogrubianie
+    "Golay Mask C": "mask/maskC.png",# 4
+    "Golay Mask D": "mask/maskD.png",# 5
+    "Golay Mask E": "mask/maskE.png",# 6
+    "Golay Mask L": "mask/maskL.png",# 7
+    "Golay Mask M": "mask/maskM.png",# 8
+    "Golay Mask R": "mask/maskR.png",# 9
+    "Skiz": "mask/skiz.png",# 2 
+    "Mask Canv": "mask/maskCanv.png",# 3
+    "Golay SKIZ": "mask/goleySkiz.png",# 10
 }
+
+# dylatacja bez stykania - Skiz
+# wypułke otoczenie - convex hull
+
+# 
 
 mask_names = [
     "Default Mask",
@@ -43,25 +48,25 @@ mask_names = [
     "Golay Mask L",
     "Golay Mask M",
     "Golay Mask R",
-    "Thickening no bordering",
+    "Skiz", 
     "Mask Canv",
     "Golay SKIZ"
 ]
 
 dictionary = {
     "Input Image": "Obraz wejściowy",
-    "Result Image": "Obraz wynikowy",
+    "Output Image": "Obraz wynikowy",
     "Load Image": "Wczytaj obraz",
     "Save Image": "Zapisz obraz",
     "PL": "EN",
-    "Load into Image": "Wczytaj do obrazu wejściowego",
-    "Mask":"Maska",
+    "Swap output/input": "Zamień obraz",
+    "Mask/Masks":"Maska/Maski)",
     "Choose a mask":"Wybierz maskę",
-    "Difference":"Różnica",
+    "Differential image":"Różnica obrazu",
     "Loaded Image":"Wczytany Obraz",
-    "Iterations":"Iteracje",
+    "No operations":"Liczba Iiteracji",
     "Morphological thickening operations":"Morfologiczne operacje pogrubiania",
-    "Settings MENU":"Ustawienia programu",
+    "MENU Settings":"Ustawienia programu",
     "Result Image MENU":"Operacje na obrazie wyjściowym",
 }
 
@@ -138,7 +143,7 @@ def update_main_image(canvas, selected_file_path):
     global img
     
     update_image = load_img(selected_file_path)
-    update_image = cv2.resize(update_image, (228, 164))
+    update_image = cv2.resize(update_image, (228, 228))
     
     for y in range(0,update_image.shape[0]-2):
         for x in range(0,update_image.shape[1]-2):
@@ -182,7 +187,7 @@ def update_mask_image(*args):
     if mask_name != mask_value:
         mask_img = load_img(os.path.join(program_dir, mask_filenames[mask_name]))
         mask_img = Image.fromarray(mask_img)
-        mask_img = mask_img.resize((228, 164), Image.LANCZOS)
+        mask_img = mask_img.resize((228, 228), Image.LANCZOS)
 
         mask_img = ImageTk.PhotoImage(mask_img)
 
@@ -304,7 +309,7 @@ def change_language():
     update_button_text(load_button, "Load Image")
     update_button_text(save_button, "Save Image")
     update_button_text(change_lang_button, "PL")
-    update_button_text(rti_button, "Load into Image")
+    update_button_text(rti_button, "Swap output/input")
 
 def update_button_text(button, button_text):
     if button_text in dictionary:
@@ -378,7 +383,7 @@ load_button = Button(frame1, text='Load Image', command=open_file_dialog)
 mask_dropdown = OptionMenu(frame1, selected_mask_var, *mask_names, command=on_select)
 save_button = Button(frame1, text='Save Image', state="disabled", command=save_file)
 change_lang_button = Button(frame1, text='PL', command=change_language)
-rti_button = Button(frame1, text='Load into input', state="disabled", command=load_to_input)
+rti_button = Button(frame1, text='Swap output/input', state="disabled", command=load_to_input)
 clear_button = Button(frame1, text='Reset', command=clear_all)
 
 # slider
@@ -387,10 +392,10 @@ mask_dropdown = ttk.Combobox(frame1, textvariable=selected_mask_var, values=mask
 mask_dropdown.bind("<<ComboboxSelected>>", on_select)
 
 # images 
-input_image_var = Canvas(frame2, width=227, height=163, bg="light blue")
-mask_image_var = Canvas(frame2, width=227, height=163,bg="light blue")
-difference_image_var = Canvas(frame2, width=227, height=163, bg="light blue")
-result_image_var = Canvas(frame2, width=227, height=163, bg="light blue")
+input_image_var = Canvas(frame2, width=227, height=227, bg="light blue")
+mask_image_var = Canvas(frame2, width=227, height=227,bg="light blue")
+difference_image_var = Canvas(frame2, width=227, height=227, bg="light blue")
+result_image_var = Canvas(frame2, width=227, height=227, bg="light blue")
 
 # separators
 separator1 = ttk.Separator(frame1, orient="horizontal")
