@@ -23,16 +23,16 @@ threshold_value = 127
 max_value = 255
 
 mask_filenames = {
-    "Default Mask": "mask/Default.png", #1 / pogrubianie
-    "Skiz": "mask/skiz.png",# 2 
-    "Convex hull": "mask/maskCanv.png",# 3
-    "Golay Mask C": "mask/maskC.png",# 4
-    "Golay Mask D": "mask/maskD.png",# 5
-    "Golay Mask E": "mask/maskE.png",# 6
-    "Golay Mask L": "mask/maskL.png",# 7
-    "Golay Mask M": "mask/maskM.png",# 8
-    "Golay Mask R": "mask/maskR.png",# 9
-    "Golay SKIZ": "mask/golaySkiz.png",# 10
+    "Default Mask": "mask/Default.png",
+    "Skiz": "mask/skiz.png",
+    "Convex hull": "mask/maskCanv.png",
+    "Golay Mask C": "mask/maskC.png",
+    "Golay Mask D": "mask/maskD.png",
+    "Golay Mask E": "mask/maskE.png",
+    "Golay Mask L": "mask/maskL.png",
+    "Golay Mask M": "mask/maskM.png",
+    "Golay Mask R": "mask/maskR.png",
+    "Golay SKIZ": "mask/golaySkiz.png",
 }
 
 mask_names = [
@@ -323,7 +323,7 @@ def update_text():
     label_iterations.config(text=translate_text("Iterations", lang))
     label_mask_image.config(text=translate_text("Mask", lang))
     appName.config(text=translate_text("Morphological thickening operations", lang))
-    text_menu.config(text=translate_text("Settings MENU", lang))
+    text_menu.config(text=translate_text("MENU Settings", lang))
     text_result_op.config(text=translate_text("Result Image MENU", lang))
     mask_value = translate_text("Choose a mask", lang)
     selected_mask_var.set(mask_value)
@@ -399,7 +399,7 @@ separator3 = ttk.Separator(mainFrame, orient="vertical")
 
 # labels
 appName = Label(mainFrame, text="Morphological thickening operations", font=('Lato', 25, 'bold'))
-text_menu= Label(frame1, text="Settings MENU", font=("Lato", 11, "bold"))
+text_menu= Label(frame1, text="MENU Settings", font=("Lato", 11, "bold"))
 label_choose_mask = Label(frame1, text="Choose a mask")
 label_iterations = Label(frame1, text="Iterations")
 text_result_op = Label(frame1, text="Result Image MENU", font=("Lato", 11, "bold"))
